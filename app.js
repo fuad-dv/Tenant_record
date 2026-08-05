@@ -1,6 +1,6 @@
 // === 1. FIREBASE SETUP & IMPORTS ===
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"; // doc, updateDoc notun jukto kora hoyeche
 
 // Nicher config-e tomar nijer Firebase details boshabe
 const firebaseConfig = {
@@ -30,11 +30,12 @@ const secAddTenant = document.getElementById('sec-add-tenant');
 const secTenantList = document.getElementById('sec-tenant-list');
 const secCollectRent = document.getElementById('sec-collect-rent');
 
-// Forms & Tables
+// Forms, Tables & Search
 const tenantForm = document.getElementById('tenant-form');
 const rentForm = document.getElementById('rent-form');
 const tenantTableBody = document.getElementById('tenant-table-body');
 const selectTenant = document.getElementById('select-tenant');
+const searchTenant = document.getElementById('search-tenant'); // Notun Search Bar ID
 
 // Modal Elements
 const historyModal = document.getElementById('history-modal');
@@ -110,7 +111,7 @@ if (tenantForm) {
                 nid: nid,
                 rent: Number(rent),
                 meter: meter,
-                status: "active",
+                status: "active", // Default status active
                 registrationDate: new Date().toLocaleDateString()
             });
             alert("Notun varatia sothikvabe add hoyeche!");
@@ -125,7 +126,7 @@ if (tenantForm) {
 }
 
 
-// === 5. LOAD TENANTS (Table & Dashboard Stats) ===
+// === 5. LOAD TENANTS (Table, Dashboard Stats & Status Logic) ===
 async function loadTenants() {
     if(!tenantTableBody) return;
     
@@ -142,13 +143,26 @@ async function loadTenants() {
             const tenant = doc.data();
             const tenantId = doc.id; 
             
-            totalTenants++;
-            totalRent += tenant.rent;
+            // Status Logic check
+            const status = tenant.status || 'active'; // Purono data thakle jeno active dhore ney
+            const isActive = status === 'active';
+            const statusClass = isActive ? 'status-active' : 'status-inactive';
+            const statusText = isActive ? 'Active' : 'Inactive';
+            const toggleButtonText = isActive ? 'Make Inactive' : 'Make Active';
+
+            // Active thaklei shudhu dashboard e count hobe
+            if (isActive) {
+                totalTenants++;
+                totalRent += tenant.rent;
+            }
 
             const tr = document.createElement('tr');
+            tr.className = isActive ? '' : 'inactive-row'; // Inactive hole ektu fyakashe dekhabe
+            
             tr.innerHTML = `
                 <td>
-                    <strong>${tenant.name}</strong> <br>
+                    <strong>${tenant.name}</strong> 
+                    <span class="status-badge ${statusClass}">${statusText}</span> <br>
                     <small style="color: gray;">Meter: ${tenant.meter || 'N/A'}</small>
                 </td>
                 <td>${tenant.phone}</td>
@@ -156,12 +170,13 @@ async function loadTenants() {
                 <td>৳ ${tenant.rent}</td>
                 <td>
                     <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}">View History</button>
+                    <button class="btn-toggle-status" data-id="${tenantId}" data-status="${status}">${toggleButtonText}</button>
                 </td>
             `;
             tenantTableBody.appendChild(tr);
         });
 
-        // Dashboard Stats update kora
+        // Dashboard Stats update kora (Ekhon shudhu Active der ta dekhabe)
         const totalTenantsEl = document.getElementById('total-tenants');
         const totalRentEl = document.getElementById('total-rent');
         if(totalTenantsEl) totalTenantsEl.innerText = totalTenants;
@@ -177,6 +192,16 @@ async function loadTenants() {
             });
         });
 
+        // Inactive/Active Toggle button-e click event
+        const toggleButtons = document.querySelectorAll('.btn-toggle-status');
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const id = e.target.getAttribute('data-id');
+                const currentStatus = e.target.getAttribute('data-status');
+                toggleTenantStatus(id, currentStatus); 
+            });
+        });
+
     } catch (error) {
         console.error("Error fetching tenants: ", error);
         tenantTableBody.innerHTML = "<tr><td colspan='5'>Error loading data!</td></tr>";
@@ -184,7 +209,48 @@ async function loadTenants() {
 }
 
 
-// === 6. LOAD TENANT RENT HISTORY (Modal) ===
+// === 6. UPDATE TENANT STATUS (Active/Inactive) ===
+async function toggleTenantStatus(tenantId, currentStatus) {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const confirmMsg = currentStatus === 'active' 
+        ? "Tumi ki sotti ei varatiake Inactive korte chao? (Tara Dashboard er hiseb theke bad jabe)" 
+        : "Tumi ki ei varatiake abar Active korte chao?";
+        
+    if(confirm(confirmMsg)) {
+        try {
+            const tenantRef = doc(db, "tenants", tenantId);
+            await updateDoc(tenantRef, {
+                status: newStatus
+            });
+            // Update hoye gele table abar notun kore load korbe
+            loadTenants(); 
+        } catch(error) {
+            console.error("Error updating status: ", error);
+            alert("Status update korte somossa hoyeche!");
+        }
+    }
+}
+
+
+// === 7. LIVE SEARCH FUNCTIONALITY ===
+if (searchTenant) {
+    searchTenant.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const tableRows = document.querySelectorAll('#tenant-table-body tr');
+
+        tableRows.forEach(row => {
+            const rowData = row.textContent.toLowerCase(); 
+            if (rowData.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none'; // Math na korle hide kore dibe
+            }
+        });
+    });
+}
+
+
+// === 8. LOAD TENANT RENT HISTORY (Modal) ===
 async function loadTenantHistory(tenantId, tenantName) {
     if(!historyModal) return;
     
@@ -223,7 +289,7 @@ async function loadTenantHistory(tenantId, tenantName) {
 }
 
 
-// === 7. POPULATE DROPDOWN FOR RENT COLLECTION ===
+// === 9. POPULATE DROPDOWN FOR RENT COLLECTION ===
 async function populateTenantDropdown() {
     if(!selectTenant) return;
     
@@ -232,10 +298,14 @@ async function populateTenantDropdown() {
         const querySnapshot = await getDocs(collection(db, "tenants"));
         querySnapshot.forEach((doc) => {
             const tenant = doc.data();
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = `${tenant.name} (Meter: ${tenant.meter || 'N/A'})`;
-            selectTenant.appendChild(option);
+            
+            // Shudhu Active varatiader theke rent nite dropdown e dekhabe
+            if (tenant.status !== 'inactive') {
+                const option = document.createElement('option');
+                option.value = doc.id;
+                option.textContent = `${tenant.name} (Meter: ${tenant.meter || 'N/A'})`;
+                selectTenant.appendChild(option);
+            }
         });
     } catch (error) {
         console.error("Error loading dropdown: ", error);
@@ -243,7 +313,7 @@ async function populateTenantDropdown() {
 }
 
 
-// === 8. COLLECT RENT FORM SUBMIT ===
+// === 10. COLLECT RENT FORM SUBMIT ===
 if (rentForm) {
     rentForm.addEventListener('submit', async (e) => {
         e.preventDefault(); 
