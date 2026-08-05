@@ -116,6 +116,27 @@
         </div>
 
     </div>
+    <!-- Rent History Modal (Popup) -->
+    <div id="history-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" id="close-modal">&times;</span>
+            <h2>Rent History: <span id="modal-tenant-name"></span></h2>
+            
+            <table class="tenant-table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Paid (৳)</th>
+                        <th>Due (৳)</th>
+                        <th>Payment Date</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                    <!-- Javascript theke history asbe -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <!-- Javascript File Connection (type="module" is very important for Firebase) -->
     <script type="module" src="app.js"></script>
