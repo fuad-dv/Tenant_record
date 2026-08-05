@@ -1,8 +1,8 @@
-// 1. Firebase theke dorkari function gulo import korchi
+// === 1. FIREBASE SETUP & IMPORTS ===
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// 2. Firebase Configuration
+// Nicher config-e tomar nijer Firebase details boshabe
 const firebaseConfig = {
   apiKey: "AIzaSyAih5VqemWBx7hrY3DKmqrHnP4zEcMs1pY",
   authDomain: "tenant-5d21f.firebaseapp.com",
@@ -12,334 +12,274 @@ const firebaseConfig = {
   appId: "1:421609725285:web:c799ca3eb9ec02dc1a958c"
 };
 
-// Initialize Firebase & Firestore
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Menu Elements
-    const navDashboard = document.getElementById('nav-dashboard');
-    const navAddTenant = document.getElementById('nav-add-tenant');
-    const navTenantList = document.getElementById('nav-tenant-list');
-    const navCollectRent = document.getElementById('nav-collect-rent'); 
-    
-    // Page Sections
-    const dashboardSection = document.getElementById('dashboard-section');
-    const addTenantSection = document.getElementById('add-tenant-section');
-    const tenantListSection = document.getElementById('tenant-list-section');
-    const collectRentSection = document.getElementById('collect-rent-section'); 
 
-    // Table, Search & Dropdown Elements
-    const tenantTableBody = document.getElementById('tenant-table-body');
-    const searchBar = document.getElementById('search-bar');
-    const selectTenantDropdown = document.getElementById('select-tenant');
+// === 2. DOM ELEMENTS ===
+// Navigation links
+const linkDashboard = document.getElementById('link-dashboard');
+const linkAddTenant = document.getElementById('link-add-tenant');
+const linkTenantList = document.getElementById('link-tenant-list');
+const linkCollectRent = document.getElementById('link-collect-rent');
 
-    // === SECTION HIDE/SHOW LOGIC ===
-    function hideAllSections() {
-        dashboardSection.classList.remove('active');
-        dashboardSection.classList.add('hidden');
-        
-        addTenantSection.classList.remove('active');
-        addTenantSection.classList.add('hidden');
-        
-        tenantListSection.classList.remove('active');
-        tenantListSection.classList.add('hidden');
-        
-        collectRentSection.classList.remove('active');
-        collectRentSection.classList.add('hidden');
-    }
+// Sections
+const secDashboard = document.getElementById('sec-dashboard');
+const secAddTenant = document.getElementById('sec-add-tenant');
+const secTenantList = document.getElementById('sec-tenant-list');
+const secCollectRent = document.getElementById('sec-collect-rent');
 
-    // === MENU CLICK EVENTS ===
-    navDashboard.addEventListener('click', (e) => {
-        e.preventDefault();
-        hideAllSections();
-        dashboardSection.classList.remove('hidden');
-        dashboardSection.classList.add('active');
+// Forms & Tables
+const tenantForm = document.getElementById('tenant-form');
+const rentForm = document.getElementById('rent-form');
+const tenantTableBody = document.getElementById('tenant-table-body');
+const selectTenant = document.getElementById('select-tenant');
+
+// Modal Elements
+const historyModal = document.getElementById('history-modal');
+const closeModal = document.getElementById('close-modal');
+const historyTableBody = document.getElementById('history-table-body');
+const modalTenantName = document.getElementById('modal-tenant-name');
+
+
+// === 3. NAVIGATION LOGIC ===
+function hideAllSections() {
+    secDashboard.classList.remove('active');
+    secDashboard.classList.add('hidden');
+    secAddTenant.classList.remove('active');
+    secAddTenant.classList.add('hidden');
+    secTenantList.classList.remove('active');
+    secTenantList.classList.add('hidden');
+    secCollectRent.classList.remove('active');
+    secCollectRent.classList.add('hidden');
+}
+
+linkDashboard.addEventListener('click', () => {
+    hideAllSections();
+    secDashboard.classList.remove('hidden');
+    secDashboard.classList.add('active');
+});
+
+linkAddTenant.addEventListener('click', () => {
+    hideAllSections();
+    secAddTenant.classList.remove('hidden');
+    secAddTenant.classList.add('active');
+});
+
+linkTenantList.addEventListener('click', () => {
+    hideAllSections();
+    secTenantList.classList.remove('hidden');
+    secTenantList.classList.add('active');
+    loadTenants(); // Jokhoni list page-e jabe, data load hobe
+});
+
+linkCollectRent.addEventListener('click', () => {
+    hideAllSections();
+    secCollectRent.classList.remove('hidden');
+    secCollectRent.classList.add('active');
+    populateTenantDropdown(); // Dropdown-e nam ashbe
+});
+
+// Modal Close Action
+if(closeModal) {
+    closeModal.addEventListener('click', () => {
+        historyModal.classList.add('hidden');
     });
+}
 
-    navAddTenant.addEventListener('click', (e) => {
-        e.preventDefault();
-        hideAllSections();
-        addTenantSection.classList.remove('hidden');
-        addTenantSection.classList.add('active');
-    });
 
-    navTenantList.addEventListener('click', async (e) => {
-        e.preventDefault();
-        hideAllSections();
-        tenantListSection.classList.remove('hidden');
-        tenantListSection.classList.add('active');
-        
-        await loadTenants(); // List e click korle data load hobe
-    });
-
-    navCollectRent.addEventListener('click', async (e) => {
-        e.preventDefault();
-        hideAllSections();
-        collectRentSection.classList.remove('hidden');
-        collectRentSection.classList.add('active');
-        
-        await loadTenantsForDropdown(); // Rent form e click korle dropdown e nam asbe
-    });
-
-    // === 1. ADD TENANT FORM SUBMIT ===
-    const tenantForm = document.getElementById('tenant-form');
+// === 4. TENANT REGISTRATION FORM SUBMIT ===
+if (tenantForm) {
     tenantForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const submitBtn = tenantForm.querySelector('button[type="submit"]');
-        submitBtn.innerText = "Saving...";
-        
-        const name = document.getElementById('name').value;
-        const phone = document.getElementById('phone').value;
-        const nid = document.getElementById('nid').value;
-        const meter = document.getElementById('meter').value; 
-        const rent = document.getElementById('rent').value;
+        submitBtn.innerText = "Registering...";
+
+        const name = document.getElementById('tenant-name').value;
+        const phone = document.getElementById('tenant-phone').value;
+        const nid = document.getElementById('tenant-nid').value;
+        const rent = document.getElementById('tenant-rent').value;
+        const meter = document.getElementById('tenant-meter').value; // Jodi thake
 
         try {
             await addDoc(collection(db, "tenants"), {
                 name: name,
                 phone: phone,
                 nid: nid,
-                meter: meter,
                 rent: Number(rent),
-                status: "active", // Varatia ekhon running ache
+                meter: meter,
+                status: "active",
+                registrationDate: new Date().toLocaleDateString()
+            });
+            alert("Notun varatia sothikvabe add hoyeche!");
+            tenantForm.reset();
+        } catch (error) {
+            console.error("Error adding tenant: ", error);
+            alert("Error: Data save hoyni!");
+        } finally {
+            submitBtn.innerText = "Register Tenant";
+        }
+    });
+}
+
+
+// === 5. LOAD TENANTS (Table & Dashboard Stats) ===
+async function loadTenants() {
+    if(!tenantTableBody) return;
+    
+    tenantTableBody.innerHTML = "<tr><td colspan='5'>Loading Data...</td></tr>";
+    
+    try {
+        const querySnapshot = await getDocs(collection(db, "tenants"));
+        tenantTableBody.innerHTML = ""; 
+        
+        let totalTenants = 0;
+        let totalRent = 0;
+
+        querySnapshot.forEach((doc) => {
+            const tenant = doc.data();
+            const tenantId = doc.id; 
+            
+            totalTenants++;
+            totalRent += tenant.rent;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <strong>${tenant.name}</strong> <br>
+                    <small style="color: gray;">Meter: ${tenant.meter || 'N/A'}</small>
+                </td>
+                <td>${tenant.phone}</td>
+                <td>${tenant.nid}</td>
+                <td>৳ ${tenant.rent}</td>
+                <td>
+                    <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}">View History</button>
+                </td>
+            `;
+            tenantTableBody.appendChild(tr);
+        });
+
+        // Dashboard Stats update kora
+        const totalTenantsEl = document.getElementById('total-tenants');
+        const totalRentEl = document.getElementById('total-rent');
+        if(totalTenantsEl) totalTenantsEl.innerText = totalTenants;
+        if(totalRentEl) totalRentEl.innerText = totalRent;
+
+        // View History button-e click event
+        const viewButtons = document.querySelectorAll('.btn-view');
+        viewButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const id = e.target.getAttribute('data-id');
+                const name = e.target.getAttribute('data-name');
+                loadTenantHistory(id, name); 
+            });
+        });
+
+    } catch (error) {
+        console.error("Error fetching tenants: ", error);
+        tenantTableBody.innerHTML = "<tr><td colspan='5'>Error loading data!</td></tr>";
+    }
+}
+
+
+// === 6. LOAD TENANT RENT HISTORY (Modal) ===
+async function loadTenantHistory(tenantId, tenantName) {
+    if(!historyModal) return;
+    
+    historyModal.classList.remove('hidden');
+    modalTenantName.innerText = tenantName;
+    historyTableBody.innerHTML = "<tr><td colspan='4'>History Loading...</td></tr>";
+
+    try {
+        const q = query(collection(db, "rent_records"), where("tenantId", "==", tenantId));
+        const querySnapshot = await getDocs(q);
+        
+        historyTableBody.innerHTML = ""; 
+
+        if (querySnapshot.empty) {
+            historyTableBody.innerHTML = "<tr><td colspan='4'>Kono varar history nei!</td></tr>";
+            return;
+        }
+
+        querySnapshot.forEach((doc) => {
+            const record = doc.data();
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${record.rentMonth}</td>
+                <td style="color: green; font-weight: bold;">৳ ${record.paidAmount}</td>
+                <td style="color: red;">৳ ${record.dueAmount}</td>
+                <td>${record.paymentDate}</td>
+            `;
+            historyTableBody.appendChild(tr);
+        });
+
+    } catch (error) {
+        console.error("Error fetching history: ", error);
+        historyTableBody.innerHTML = "<tr><td colspan='4'>Error loading history!</td></tr>";
+    }
+}
+
+
+// === 7. POPULATE DROPDOWN FOR RENT COLLECTION ===
+async function populateTenantDropdown() {
+    if(!selectTenant) return;
+    
+    selectTenant.innerHTML = '<option value="">-- Select Tenant --</option>';
+    try {
+        const querySnapshot = await getDocs(collection(db, "tenants"));
+        querySnapshot.forEach((doc) => {
+            const tenant = doc.data();
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = `${tenant.name} (Meter: ${tenant.meter || 'N/A'})`;
+            selectTenant.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error loading dropdown: ", error);
+    }
+}
+
+
+// === 8. COLLECT RENT FORM SUBMIT ===
+if (rentForm) {
+    rentForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        
+        const submitBtn = rentForm.querySelector('button[type="submit"]');
+        submitBtn.innerText = "Saving Record...";
+        
+        const tenantId = document.getElementById('select-tenant').value;
+        const rentMonth = document.getElementById('rent-month').value;
+        const paidAmount = document.getElementById('paid-amount').value;
+        const dueAmount = document.getElementById('due-amount').value;
+
+        if (!tenantId) {
+            alert("Doyakore ekjon varatia select korun!");
+            submitBtn.innerText = "Save Rent Record";
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "rent_records"), {
+                tenantId: tenantId,
+                rentMonth: rentMonth,
+                paidAmount: Number(paidAmount),
+                dueAmount: Number(dueAmount),
+                paymentDate: new Date().toLocaleDateString(),
                 timestamp: new Date()
             });
             
-            alert("Tenant successfully registered with Meter Number!");
-            tenantForm.reset();
+            alert("Mashik varar hiseb sothikvabe save hoyeche!");
+            rentForm.reset(); 
             
         } catch (error) {
-            console.error("Error adding document: ", error);
+            console.error("Error saving rent record: ", error);
             alert("Oops! Data save korte somossa hoyeche.");
         } finally {
-            submitBtn.innerText = "Save Tenant Information";
+            submitBtn.innerText = "Save Rent Record";
         }
     });
-
-    // === 2. LOAD TENANTS FOR TABLE ===
-    async function loadTenants() {
-        tenantTableBody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
-        try {
-            const querySnapshot = await getDocs(collection(db, "tenants"));
-            tenantTableBody.innerHTML = ""; 
-            
-            let totalTenants = 0;
-            let totalRent = 0;
-
-            querySnapshot.forEach((doc) => {
-                const tenant = doc.data();
-                
-                totalTenants++;
-                totalRent += tenant.rent;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <strong>${tenant.name}</strong> <br>
-                        <small style="color: gray;">Meter: ${tenant.meter || 'N/A'} | Status: ${tenant.status}</small>
-                    </td>
-                    <td>${tenant.phone}</td>
-                    <td>${tenant.nid}</td>
-                    <td>৳ ${tenant.rent}</td>
-                `;
-                tenantTableBody.appendChild(tr);
-            });
-
-            // Update Dashboard stats
-            document.getElementById('total-tenants').innerText = totalTenants;
-            document.getElementById('total-rent').innerText = totalRent;
-
-        } catch (error) {
-            console.error("Error fetching tenants: ", error);
-            tenantTableBody.innerHTML = "<tr><td colspan='4'>Error loading data!</td></tr>";
-        }
-    }
-
-    // === 3. SEARCH FEATURE ===
-    searchBar.addEventListener('keyup', (e) => {
-        const searchString = e.target.value.toLowerCase();
-        const rows = tenantTableBody.getElementsByTagName('tr');
-
-        Array.from(rows).forEach(row => {
-            const name = row.cells[0].innerText.toLowerCase();
-            const phone = row.cells[1].innerText.toLowerCase();
-            const nid = row.cells[2].innerText.toLowerCase();
-
-            if (name.includes(searchString) || phone.includes(searchString) || nid.includes(searchString)) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        });
-    });
-
-    // === 4. LOAD ACTIVE TENANTS FOR RENT DROPDOWN ===
-    async function loadTenantsForDropdown() {
-        selectTenantDropdown.innerHTML = '<option value="">-- Loading Tenants... --</option>';
-        try {
-            const querySnapshot = await getDocs(collection(db, "tenants"));
-            selectTenantDropdown.innerHTML = '<option value="">-- Choose a Tenant --</option>';
-            
-            querySnapshot.forEach((doc) => {
-                const tenant = doc.data();
-                // Shudhu active varatiader nam dropdown e asbe
-                if(tenant.status === "active") {
-                    const option = document.createElement('option');
-                    option.value = doc.id; // Document ID value hisebe jabe
-                    option.textContent = `${tenant.name} (${tenant.phone})`;
-                    selectTenantDropdown.appendChild(option);
-                }
-            });
-        } catch (error) {
-            console.error("Error loading tenants for dropdown: ", error);
-            selectTenantDropdown.innerHTML = '<option value="">-- Error loading --</option>';
-        }
-    }
-});
-// Modal Elements
-    const historyModal = document.getElementById('history-modal');
-    const closeModal = document.getElementById('close-modal');
-    const historyTableBody = document.getElementById('history-table-body');
-    const modalTenantName = document.getElementById('modal-tenant-name');
-
-    // Modal Close korar event
-    closeModal.addEventListener('click', () => {
-        historyModal.classList.add('hidden');
-    });
-
-    // === 2. LOAD TENANTS FOR TABLE (Updated) ===
-    async function loadTenants() {
-        tenantTableBody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
-        try {
-            const querySnapshot = await getDocs(collection(db, "tenants"));
-            tenantTableBody.innerHTML = ""; 
-            
-            let totalTenants = 0;
-            let totalRent = 0;
-
-            querySnapshot.forEach((doc) => {
-                const tenant = doc.data();
-                const tenantId = doc.id; // Tenant er ID
-                
-                totalTenants++;
-                totalRent += tenant.rent;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <strong>${tenant.name}</strong> <br>
-                        <small style="color: gray;">Meter: ${tenant.meter || 'N/A'}</small>
-                    </td>
-                    <td>${tenant.phone}</td>
-                    <td>${tenant.nid}</td>
-                    <td>৳ ${tenant.rent}</td>
-                    <td>
-                        <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}">View History</button>
-                    </td>
-                `;
-                tenantTableBody.appendChild(tr);
-            });
-
-            // Update Dashboard stats
-            document.getElementById('total-tenants').innerText = totalTenants;
-            document.getElementById('total-rent').innerText = totalRent;
-
-            // Shob "View History" button-e click event add kora
-            const viewButtons = document.querySelectorAll('.btn-view');
-            viewButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const id = e.target.getAttribute('data-id');
-                    const name = e.target.getAttribute('data-name');
-                    loadTenantHistory(id, name); // History load korar function call
-                });
-            });
-
-        } catch (error) {
-            console.error("Error fetching tenants: ", error);
-            tenantTableBody.innerHTML = "<tr><td colspan='5'>Error loading data!</td></tr>";
-        }
-    }
-
-    // === NOTUN: SPECIFIC TENANT ER HISTORY LOAD KORA ===
-    async function loadTenantHistory(tenantId, tenantName) {
-        // Modal ta open kora
-        historyModal.classList.remove('hidden');
-        modalTenantName.innerText = tenantName;
-        historyTableBody.innerHTML = "<tr><td colspan='4'>History Loading...</td></tr>";
-
-        try {
-            // Shudhu oi tenant er id diye rent_records theke data khuje berr kora
-            const q = query(collection(db, "rent_records"), where("tenantId", "==", tenantId));
-            const querySnapshot = await getDocs(q);
-            
-            historyTableBody.innerHTML = ""; // Clear loading
-
-            if (querySnapshot.empty) {
-                historyTableBody.innerHTML = "<tr><td colspan='4'>Kono varar history nei!</td></tr>";
-                return;
-            }
-
-            // Data thakle table e boshanor jonno
-            querySnapshot.forEach((doc) => {
-                const record = doc.data();
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${record.rentMonth}</td>
-                    <td style="color: green; font-weight: bold;">৳ ${record.paidAmount}</td>
-                    <td style="color: red;">৳ ${record.dueAmount}</td>
-                    <td>${record.paymentDate}</td>
-                `;
-                historyTableBody.appendChild(tr);
-            });
-
-        } catch (error) {
-            console.error("Error fetching history: ", error);
-            historyTableBody.innerHTML = "<tr><td colspan='4'>Error loading history!</td></tr>";
-        }
-    }
-// === 5. COLLECT RENT FORM SUBMIT ===
-    const rentForm = document.getElementById('rent-form');
-    
-    // Form jate null na ashe tar jonno ekta if condition diyechi
-    if (rentForm) {
-        rentForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Eta konovabei page reload hote dibe na
-            
-            const submitBtn = rentForm.querySelector('button[type="submit"]');
-            submitBtn.innerText = "Saving Record...";
-            
-            const tenantId = document.getElementById('select-tenant').value;
-            const rentMonth = document.getElementById('rent-month').value;
-            const paidAmount = document.getElementById('paid-amount').value;
-            const dueAmount = document.getElementById('due-amount').value;
-
-            if (!tenantId) {
-                alert("Doyakore ekjon varatia select korun!");
-                submitBtn.innerText = "Save Rent Record";
-                return;
-            }
-
-            try {
-                await addDoc(collection(db, "rent_records"), {
-                    tenantId: tenantId,
-                    rentMonth: rentMonth,
-                    paidAmount: Number(paidAmount),
-                    dueAmount: Number(dueAmount),
-                    paymentDate: new Date().toLocaleDateString(),
-                    timestamp: new Date()
-                });
-                
-                alert("Mashik varar hiseb sothikvabe save hoyeche!");
-                rentForm.reset(); 
-                
-            } catch (error) {
-                console.error("Error saving rent record: ", error);
-                alert("Oops! Data save korte somossa hoyeche.");
-            } finally {
-                submitBtn.innerText = "Save Rent Record";
-            }
-        });
-    }
+}
