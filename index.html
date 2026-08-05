@@ -3,23 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bariwala - Tenant Management System</title>
+    <title>Tenant Management System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    
+    <!-- Sidebar Menu -->
     <div class="sidebar">
-        <h2>Bariwala Admin</h2>
+        <h2>Tenant Manager</h2>
         <ul>
             <li><a href="#" id="nav-dashboard">Dashboard</a></li>
             <li><a href="#" id="nav-add-tenant">Add Tenant</a></li>
             <li><a href="#" id="nav-tenant-list">Tenant List</a></li>
-            <li><a href="#" id="nav-collect-rent">Collect Rent</a></li> <!-- Notun Menu -->
+            <li><a href="#" id="nav-collect-rent">Collect Rent</a></li>
             <li><a href="#">Settings</a></li>
         </ul>
     </div>
 
+    <!-- Main Content Area -->
     <div class="main-content">
-        <!-- Dashboard Section -->
+        
+        <!-- 1. Dashboard Section -->
         <div id="dashboard-section" class="section active">
             <h1>Dashboard</h1>
             <div class="stats-container">
@@ -28,12 +32,63 @@
                     <p id="total-tenants">0</p>
                 </div>
                 <div class="stat-box">
-                    <h3>Total Rent Collected</h3>
+                    <h3>Total Rent</h3>
                     <p>৳ <span id="total-rent">0</span></p>
                 </div>
             </div>
         </div>
-        <!-- Collect Rent Section -->
+
+        <!-- 2. Add Tenant Section -->
+        <div id="add-tenant-section" class="section hidden">
+            <h1>Add New Tenant</h1>
+            <form id="tenant-form">
+                <div class="form-group">
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="nid">NID Number:</label>
+                    <input type="text" id="nid" required>
+                </div>
+                <div class="form-group">
+                    <label for="meter">Meter Number:</label>
+                    <input type="text" id="meter" required>
+                </div>
+                <div class="form-group">
+                    <label for="rent">Monthly Rent (৳):</label>
+                    <input type="number" id="rent" required>
+                </div>
+                <button type="submit" class="btn-submit">Save Tenant Information</button>
+            </form>
+        </div>
+
+        <!-- 3. Tenant List & Search Section -->
+        <div id="tenant-list-section" class="section hidden">
+            <h1>Tenant List</h1>
+            <div class="search-container">
+                <input type="text" id="search-bar" placeholder="Search by Name, Phone, or NID...">
+            </div>
+            
+            <table class="tenant-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>NID</th>
+                        <th>Rent (৳)</th>
+                    </tr>
+                </thead>
+                <tbody id="tenant-table-body">
+                    <!-- Javascript theke data ekhane asbe -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. Collect Rent Section -->
         <div id="collect-rent-section" class="section hidden">
             <h1>Collect Monthly Rent</h1>
             <form id="rent-form">
@@ -60,34 +115,9 @@
             </form>
         </div>
 
-        <!-- Add Tenant Section -->
-        <div id="add-tenant-section" class="section hidden">
-            <h1>Add New Tenant</h1>
-            <form id="tenant-form">
-                <div class="form-group">
-                    <label for="name">Tenant Name:</label>
-                    <input type="text" id="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="phone">Phone Number:</label>
-                    <input type="tel" id="phone" required>
-                </div>
-                <div class="form-group">
-                    <label for="nid">NID Number:</label>
-                    <input type="text" id="nid" required>
-                    <div class="form-group">
-                    <label for="meter">Meter Number:</label>
-                    <input type="text" id="meter" required>
-                </div>
-                <div class="form-group">
-                    <label for="rent">Monthly Rent (৳):</label>
-                    <input type="number" id="rent" required>
-                </div>
-                <button type="submit" class="btn-submit">Save Tenant Information</button>
-            </form>
-        </div>
     </div>
 
+    <!-- Javascript File Connection (type="module" is very important for Firebase) -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
