@@ -183,3 +183,57 @@ h1 {
 .btn-view:hover {
     background-color: #2980b9;
 }
+/* Search Bar Styles */
+.search-container {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#search-tenant {
+    padding: 10px;
+    width: 100%;
+    max-width: 350px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Status and Button Styles */
+.status-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.status-active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.btn-toggle-status {
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.btn-toggle-status:hover {
+    background-color: #e68a00;
+}
+
+/* Inactive row opacity */
+.inactive-row {
+    opacity: 0.6;
+}
