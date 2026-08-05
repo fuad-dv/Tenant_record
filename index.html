@@ -127,16 +127,51 @@
             <table class="tenant-table">
                 <thead>
                     <tr>
+                        <th>Invoice No</th>
                         <th>Month</th>
-                        <th>Paid (৳)</th>
-                        <th>Due (৳)</th>
-                        <th>Payment Date</th>
+                        <th>Paid</th>
+                        <th>Due</th>
+                        <th>Date</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="history-table-body">
                     <!-- Javascript theke history asbe -->
                 </tbody>
             </table>
+        </div>
+    </div>
+    <!-- 6. Printable Invoice Template (Eta by default hidden thakbe) -->
+    <div id="printable-invoice" class="hidden-print">
+        <div class="invoice-box">
+            <div class="invoice-header">
+                <h1>SHIRAJI VILLA</h1>
+                <p>RENTAL PAYMENT INVOICE</p>
+            </div>
+            <div class="invoice-details">
+                <p><strong>INVOICE NO:</strong> <span id="inv-no"></span></p>
+                <p><strong>DATE:</strong> <span id="inv-date"></span></p>
+                <p><strong>TENANT NAME:</strong> <span id="inv-tenant-name"></span></p>
+                <p><strong>RENT MONTH:</strong> <span id="inv-month"></span></p>
+            </div>
+            <table class="invoice-table">
+                <tr>
+                    <th>DESCRIPTION</th>
+                    <th>AMOUNT</th>
+                </tr>
+                <tr>
+                    <td>PAID AMOUNT</td>
+                    <td>TK <span id="inv-paid"></span></td>
+                </tr>
+                <tr>
+                    <td>DUE AMOUNT</td>
+                    <td>TK <span id="inv-due"></span></td>
+                </tr>
+            </table>
+            <div class="invoice-footer">
+                <p>THANK YOU FOR YOUR PAYMENT.</p>
+                <p class="signature">AUTHORIZED SIGNATURE</p>
+            </div>
         </div>
     </div>
 
