@@ -7,117 +7,112 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
-    <!-- Sidebar Menu -->
+
+    <!-- Sidebar Navigation -->
     <div class="sidebar">
-        <h2>Tenant Manager</h2>
+        <h2>Tenant System</h2>
         <ul>
-            <li><a href="#" id="nav-dashboard">Dashboard</a></li>
-            <li><a href="#" id="nav-add-tenant">Add Tenant</a></li>
-            <li><a href="#" id="nav-tenant-list">Tenant List</a></li>
-            <li><a href="#" id="nav-collect-rent">Collect Rent</a></li>
-            <li><a href="#">Settings</a></li>
+            <li><a href="#" id="link-dashboard">Dashboard</a></li>
+            <li><a href="#" id="link-add-tenant">Add Tenant</a></li>
+            <li><a href="#" id="link-tenant-list">Tenant List</a></li>
+            <li><a href="#" id="link-collect-rent">Collect Rent</a></li>
         </ul>
     </div>
 
     <!-- Main Content Area -->
     <div class="main-content">
-        
+
         <!-- 1. Dashboard Section -->
-        <div id="dashboard-section" class="section active">
-            <h1>Dashboard</h1>
-            <div class="stats-container">
-                <div class="stat-box">
+        <section id="sec-dashboard" class="active">
+            <h2>Dashboard</h2>
+            <div class="dashboard-cards">
+                <div class="card">
                     <h3>Total Tenants</h3>
                     <p id="total-tenants">0</p>
                 </div>
-                <div class="stat-box">
-                    <h3>Total Rent</h3>
+                <div class="card">
+                    <h3>Expected Total Rent</h3>
                     <p>৳ <span id="total-rent">0</span></p>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- 2. Add Tenant Section -->
-        <div id="add-tenant-section" class="section hidden">
-            <h1>Add New Tenant</h1>
+        <section id="sec-add-tenant" class="hidden">
+            <h2>Add New Tenant</h2>
             <form id="tenant-form">
                 <div class="form-group">
-                    <label for="name">Full Name:</label>
-                    <input type="text" id="name" required>
+                    <label>Tenant Name:</label>
+                    <input type="text" id="tenant-name" required>
                 </div>
                 <div class="form-group">
-                    <label for="phone">Phone Number:</label>
-                    <input type="tel" id="phone" required>
+                    <label>Phone Number:</label>
+                    <input type="text" id="tenant-phone" required>
                 </div>
                 <div class="form-group">
-                    <label for="nid">NID Number:</label>
-                    <input type="text" id="nid" required>
+                    <label>NID Number:</label>
+                    <input type="text" id="tenant-nid">
                 </div>
                 <div class="form-group">
-                    <label for="meter">Meter Number:</label>
-                    <input type="text" id="meter" required>
+                    <label>Monthly Rent (৳):</label>
+                    <input type="number" id="tenant-rent" required>
                 </div>
                 <div class="form-group">
-                    <label for="rent">Monthly Rent (৳):</label>
-                    <input type="number" id="rent" required>
+                    <label>Meter Number:</label>
+                    <input type="text" id="tenant-meter">
                 </div>
-                <button type="submit" class="btn-submit">Save Tenant Information</button>
+                <button type="submit">Register Tenant</button>
             </form>
-        </div>
+        </section>
 
-        <!-- 3. Tenant List & Search Section -->
-        <div id="tenant-list-section" class="section hidden">
-            <h1>Tenant List</h1>
-            <div class="search-container">
-                <input type="text" id="search-bar" placeholder="Search by Name, Phone, or NID...">
-            </div>
-            
+        <!-- 3. Tenant List Section -->
+        <section id="sec-tenant-list" class="hidden">
+            <h2>Tenant List</h2>
             <table class="tenant-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>Name & Meter</th>
                         <th>Phone</th>
                         <th>NID</th>
                         <th>Rent (৳)</th>
-                        <th>Action</th>
+                        <th>Action</th> <!-- Etai sei notun column -->
                     </tr>
                 </thead>
                 <tbody id="tenant-table-body">
-                    <!-- Javascript theke data ekhane asbe -->
+                    <!-- Javascript theke data asbe -->
                 </tbody>
             </table>
-        </div>
+        </section>
 
         <!-- 4. Collect Rent Section -->
-        <div id="collect-rent-section" class="section hidden">
-            <h1>Collect Monthly Rent</h1>
+        <section id="sec-collect-rent" class="hidden">
+            <h2>Collect Rent</h2>
             <form id="rent-form">
                 <div class="form-group">
-                    <label for="select-tenant">Select Tenant:</label>
+                    <label>Select Tenant:</label>
                     <select id="select-tenant" required>
-                        <option value="">-- Choose a Tenant --</option>
-                        <!-- Javascript theke ekhane nam asbe -->
+                        <option value="">-- Select Tenant --</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="rent-month">Rent Month & Year:</label>
+                    <label>Rent Month:</label>
                     <input type="month" id="rent-month" required>
                 </div>
                 <div class="form-group">
-                    <label for="paid-amount">Paid Amount (৳):</label>
+                    <label>Paid Amount (৳):</label>
                     <input type="number" id="paid-amount" required>
                 </div>
                 <div class="form-group">
-                    <label for="due-amount">Due Amount (৳) [If any]:</label>
-                    <input type="number" id="due-amount" value="0">
+                    <label>Due Amount (৳):</label>
+                    <input type="number" id="due-amount" value="0" required>
                 </div>
-                <button type="submit" class="btn-submit">Save Rent Record</button>
+                <button type="submit">Save Rent Record</button>
             </form>
-        </div>
+        </section>
 
     </div>
-    <!-- Rent History Modal (Popup) -->
+
+    <!-- 5. Rent History Modal (Popup) -->
     <div id="history-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-btn" id="close-modal">&times;</span>
@@ -139,7 +134,8 @@
         </div>
     </div>
 
-    <!-- Javascript File Connection (type="module" is very important for Firebase) -->
+    <!-- Firebase ebang Custom JS link -->
     <script type="module" src="app.js"></script>
+
 </body>
 </html>
