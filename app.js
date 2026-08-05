@@ -198,3 +198,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
+// === 5. COLLECT RENT FORM SUBMIT ===
+    const rentForm = document.getElementById('rent-form');
+    
+    rentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = rentForm.querySelector('button[type="submit"]');
+        submitBtn.innerText = "Saving Record...";
+        
+        const tenantId = document.getElementById('select-tenant').value;
+        const rentMonth = document.getElementById('rent-month').value;
+        const paidAmount = document.getElementById('paid-amount').value;
+        const dueAmount = document.getElementById('due-amount').value;
+
+        // Varatia select na korle error dekhano
+        if (!tenantId) {
+            alert("Doyakore ekjon varatia select korun!");
+            submitBtn.innerText = "Save Rent Record";
+            return;
+        }
+
+        try {
+            // Notun collection "rent_records"-e data save kora
+            await addDoc(collection(db, "rent_records"), {
+                tenantId: tenantId, // Kon varatiar id
+                rentMonth: rentMonth, // Kon masher vara (e.g., 2026-08)
+                paidAmount: Number(paidAmount),
+                dueAmount: Number(dueAmount),
+                paymentDate: new Date().toLocaleDateString(), // Kobe vara dilo tar date
+                timestamp: new Date()
+            });
+            
+            alert("Mashik varar hiseb sothikvabe save hoyeche!");
+            rentForm.reset(); // Form clear kore dewa
+            
+        } catch (error) {
+            console.error("Error saving rent record: ", error);
+            alert("Oops! Data save korte somossa hoyeche.");
+        } finally {
+            submitBtn.innerText = "Save Rent Record";
+        }
+    });
