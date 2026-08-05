@@ -12,7 +12,8 @@
         <ul>
             <li><a href="#" id="nav-dashboard">Dashboard</a></li>
             <li><a href="#" id="nav-add-tenant">Add Tenant</a></li>
-            <li><a href="#">Tenant List</a></li>
+            <li><a href="#" id="nav-tenant-list">Tenant List</a></li>
+            <li><a href="#" id="nav-collect-rent">Collect Rent</a></li> <!-- Notun Menu -->
             <li><a href="#">Settings</a></li>
         </ul>
     </div>
@@ -32,6 +33,32 @@
                 </div>
             </div>
         </div>
+        <!-- Collect Rent Section -->
+        <div id="collect-rent-section" class="section hidden">
+            <h1>Collect Monthly Rent</h1>
+            <form id="rent-form">
+                <div class="form-group">
+                    <label for="select-tenant">Select Tenant:</label>
+                    <select id="select-tenant" required>
+                        <option value="">-- Choose a Tenant --</option>
+                        <!-- Javascript theke ekhane nam asbe -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="rent-month">Rent Month & Year:</label>
+                    <input type="month" id="rent-month" required>
+                </div>
+                <div class="form-group">
+                    <label for="paid-amount">Paid Amount (৳):</label>
+                    <input type="number" id="paid-amount" required>
+                </div>
+                <div class="form-group">
+                    <label for="due-amount">Due Amount (৳) [If any]:</label>
+                    <input type="number" id="due-amount" value="0">
+                </div>
+                <button type="submit" class="btn-submit">Save Rent Record</button>
+            </form>
+        </div>
 
         <!-- Add Tenant Section -->
         <div id="add-tenant-section" class="section hidden">
@@ -48,6 +75,9 @@
                 <div class="form-group">
                     <label for="nid">NID Number:</label>
                     <input type="text" id="nid" required>
+                    <div class="form-group">
+                    <label for="meter">Meter Number:</label>
+                    <input type="text" id="meter" required>
                 </div>
                 <div class="form-group">
                     <label for="rent">Monthly Rent (৳):</label>
