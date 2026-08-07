@@ -1,6 +1,5 @@
 // === 1. FIREBASE SETUP & IMPORTS ===
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-// getDoc ebong setDoc notun jukto kora hoyeche
 import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"; 
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
@@ -33,17 +32,17 @@ const linkDashboard = document.getElementById('link-dashboard');
 const linkAddTenant = document.getElementById('link-add-tenant');
 const linkTenantList = document.getElementById('link-tenant-list');
 const linkCollectRent = document.getElementById('link-collect-rent');
-const linkSettings = document.getElementById('link-settings'); // Notun
+const linkSettings = document.getElementById('link-settings'); 
 
 const secDashboard = document.getElementById('sec-dashboard');
 const secAddTenant = document.getElementById('sec-add-tenant');
 const secTenantList = document.getElementById('sec-tenant-list');
 const secCollectRent = document.getElementById('sec-collect-rent');
-const secSettings = document.getElementById('sec-settings'); // Notun
+const secSettings = document.getElementById('sec-settings'); 
 
 const tenantForm = document.getElementById('tenant-form');
 const rentForm = document.getElementById('rent-form');
-const settingsForm = document.getElementById('settings-form'); // Notun
+const settingsForm = document.getElementById('settings-form'); 
 const tenantTableBody = document.getElementById('tenant-table-body');
 const selectTenant = document.getElementById('select-tenant');
 const searchTenant = document.getElementById('search-tenant');
@@ -63,7 +62,7 @@ onAuthStateChanged(auth, (user) => {
         loginScreen.classList.add('hidden-login');
         mainContent.style.display = 'block';
         sidebar.style.display = 'block';
-        loadSettings(); // Login holei settings load hobe
+        loadSettings(); 
         loadTenants(); 
     } else {
         loginScreen.classList.remove('hidden-login');
@@ -143,7 +142,6 @@ if (settingsForm) {
         
         const newName = document.getElementById('setting-property-name').value;
         try {
-            // "settings" collection er "config" document e data save/update korbe
             await setDoc(doc(db, "settings", "config"), { propertyName: newName }, { merge: true });
             globalPropertyName = newName;
             alert("Settings saved successfully!");
@@ -203,7 +201,8 @@ async function loadTenants() {
                 <td>${tenant.nid}</td>
                 <td>৳ ${tenant.rent}</td>
                 <td>
-                    <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}">View History</button>
+                    <!-- Ekhane data-nid jukto kora hoyeche jeno print er somoy pass kora jay -->
+                    <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}" data-nid="${tenant.nid || 'N/A'}">View History</button>
                     <button class="btn-toggle-status" data-id="${tenantId}" data-status="${status}">${isActive ? 'Make Inactive' : 'Make Active'}</button>
                 </td>
             `;
@@ -212,7 +211,12 @@ async function loadTenants() {
         if(document.getElementById('total-tenants')) document.getElementById('total-tenants').innerText = totalTenants;
         if(document.getElementById('total-rent')) document.getElementById('total-rent').innerText = totalRent;
 
-        document.querySelectorAll('.btn-view').forEach(button => { button.addEventListener('click', (e) => { loadTenantHistory(e.target.getAttribute('data-id'), e.target.getAttribute('data-name')); }); });
+        // View history te NID receive korar jonno ektu update kora hoyeche
+        document.querySelectorAll('.btn-view').forEach(button => { 
+            button.addEventListener('click', (e) => { 
+                loadTenantHistory(e.target.getAttribute('data-id'), e.target.getAttribute('data-name'), e.target.getAttribute('data-nid')); 
+            }); 
+        });
         document.querySelectorAll('.btn-toggle-status').forEach(button => { button.addEventListener('click', (e) => { toggleTenantStatus(e.target.getAttribute('data-id'), e.target.getAttribute('data-status')); }); });
     } catch (error) {}
 }
@@ -232,8 +236,8 @@ if (searchTenant) {
 }
 
 
-// === 8. LOAD TENANT RENT HISTORY & PRINT LOGIC ===
-async function loadTenantHistory(tenantId, tenantName) {
+// === 8. LOAD TENANT RENT HISTORY & PRINT LOGIC (POS Update) ===
+async function loadTenantHistory(tenantId, tenantName, tenantNid) {
     if(!historyModal) return;
     historyModal.classList.remove('hidden');
     modalTenantName.innerText = tenantName;
@@ -254,7 +258,8 @@ async function loadTenantHistory(tenantId, tenantName) {
                 <td style="color: red;">৳ ${record.dueAmount}</td>
                 <td>${record.paymentDate}</td>
                 <td>
-                    <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${record.rentMonth}', '${record.paidAmount}', '${record.dueAmount}', '${record.paymentDate}', '${tenantName}')">Print</button>
+                    <!-- Print button e ekhon NID o pass kora hocche -->
+                    <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${record.rentMonth}', ${record.paidAmount}, ${record.dueAmount}, '${tenantName}', '${tenantNid}')">Print Receipt</button>
                 </td>
             `;
             historyTableBody.appendChild(tr);
@@ -262,18 +267,40 @@ async function loadTenantHistory(tenantId, tenantName) {
     } catch (error) {}
 }
 
-window.printInvoice = function(invoiceNo, month, paid, due, date, tenantName) {
-    // Ekhane Invoice er nam dynamic vabe set kora hocche
+window.printInvoice = function(invoiceNo, month, paidAmount, dueAmount, tenantName, tenantNid) {
+    // Dynamic Settings Title
     const titleElement = document.getElementById('inv-property-title');
     if(titleElement) titleElement.innerText = globalPropertyName;
 
+    // Real-time Date and Time setup
+    const now = new Date();
+    const realDate = now.toLocaleDateString();
+    const realTime = now.toLocaleTimeString();
+
+    // Calculations (Rent + Default Gas Bill)
+    const fixedGasBill = 1080;
+    const finalTotal = Number(paidAmount) + fixedGasBill;
+
+    // Setting values to POS Template HTML IDs
     document.getElementById('inv-no').innerText = invoiceNo;
-    document.getElementById('inv-date').innerText = date;
+    document.getElementById('inv-date').innerText = realDate;
+    document.getElementById('inv-time').innerText = realTime;
     document.getElementById('inv-tenant-name').innerText = tenantName;
+    document.getElementById('inv-nid').innerText = tenantNid;
     document.getElementById('inv-month').innerText = month;
-    document.getElementById('inv-paid').innerText = paid;
-    document.getElementById('inv-due').innerText = due;
-    window.print();
+    
+    document.getElementById('inv-rent').innerText = paidAmount;
+    document.getElementById('inv-due').innerText = dueAmount;
+    document.getElementById('inv-total-paid').innerText = finalTotal;
+
+    // Generate Dynamic QR Code using public API
+    const qrData = `Invoice:${invoiceNo} | Tenant:${tenantName} | Total:${finalTotal}`;
+    document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+
+    // Timeout dewa hoyeche jeno QR code ta load howar somoy pay, tarpor print window asbe
+    setTimeout(() => {
+        window.print();
+    }, 500);
 }
 
 
