@@ -173,36 +173,54 @@
             </table>
         </div>
     </div>
-    <!-- 7. Printable Invoice Template (Eta by default hidden thakbe) -->
+    <!-- 7. POS Thermal Printable Invoice -->
     <div id="printable-invoice" class="hidden-print">
-        <div class="invoice-box">
-            <div class="invoice-header">
-                <h1 id="inv-property-title">PROPERTY NAME</h1>
-                <p>RENTAL PAYMENT INVOICE</p>
+        <div class="pos-receipt">
+            <div class="pos-header">
+                <h2 id="inv-property-title">PROPERTY NAME</h2>
+                <p>RENT PAYMENT RECEIPT</p>
+                <div class="divider">--------------------------------</div>
             </div>
-            <div class="invoice-details">
-                <p><strong>INVOICE NO:</strong> <span id="inv-no"></span></p>
-                <p><strong>DATE:</strong> <span id="inv-date"></span></p>
-                <p><strong>TENANT NAME:</strong> <span id="inv-tenant-name"></span></p>
-                <p><strong>RENT MONTH:</strong> <span id="inv-month"></span></p>
+            
+            <div class="pos-info">
+                <p><span>INV NO</span> <span>: <span id="inv-no"></span></span></p>
+                <p><span>DATE</span> <span>: <span id="inv-date"></span></span></p>
+                <p><span>TIME</span> <span>: <span id="inv-time"></span></span></p>
+                <p><span>TENANT</span> <span>: <span id="inv-tenant-name"></span></span></p>
+                <p><span>NID</span> <span>: <span id="inv-nid"></span></span></p>
+                <p><span>MONTH</span> <span>: <span id="inv-month"></span></span></p>
             </div>
-            <table class="invoice-table">
+            
+            <div class="divider">--------------------------------</div>
+            
+            <table class="pos-table">
                 <tr>
-                    <th>DESCRIPTION</th>
-                    <th>AMOUNT</th>
+                    <td>RENT AMOUNT</td>
+                    <td class="text-right">TK <span id="inv-rent"></span></td>
                 </tr>
                 <tr>
-                    <td>PAID AMOUNT</td>
-                    <td>TK <span id="inv-paid"></span></td>
+                    <td>GAS BILL (Fixed)</td>
+                    <td class="text-right">TK 1080</td>
                 </tr>
                 <tr>
                     <td>DUE AMOUNT</td>
-                    <td>TK <span id="inv-due"></span></td>
+                    <td class="text-right">TK <span id="inv-due"></span></td>
                 </tr>
             </table>
-            <div class="invoice-footer">
-                <p>THANK YOU FOR YOUR PAYMENT.</p>
-                <p class="signature">AUTHORIZED SIGNATURE</p>
+            
+            <div class="divider">--------------------------------</div>
+            
+            <div class="pos-total">
+                <h3>FINAL TOTAL : TK <span id="inv-total-paid"></span></h3>
+            </div>
+            
+            <div class="divider">--------------------------------</div>
+            
+            <div class="pos-footer">
+                <p>Scan to verify invoice</p>
+                <img id="qr-code-img" src="" alt="QR Code">
+                <p class="greeting">Thank You!</p>
+                <p class="software-credit">System by Shiraji Villa</p>
             </div>
         </div>
     </div>
