@@ -224,6 +224,39 @@
             </div>
         </div>
     </div>
+    <!-- 8. Edit Tenant Modal -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" id="close-edit-modal">&times;</span>
+            <h2>Edit Tenant Info</h2>
+            <form id="edit-tenant-form">
+                <input type="hidden" id="edit-tenant-id">
+                
+                <div class="form-group">
+                    <label>Tenant Name:</label>
+                    <input type="text" id="edit-tenant-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number:</label>
+                    <input type="text" id="edit-tenant-phone" required>
+                </div>
+                <div class="form-group">
+                    <label>NID Number:</label>
+                    <input type="text" id="edit-tenant-nid">
+                </div>
+                <div class="form-group">
+                    <label>Monthly Rent (৳):</label>
+                    <input type="number" id="edit-tenant-rent" required>
+                </div>
+                <div class="form-group">
+                    <label>Meter Number:</label>
+                    <input type="text" id="edit-tenant-meter">
+                </div>
+                
+                <button type="submit">Update Tenant Info</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Firebase ebang Custom JS link -->
     <script type="module" src="app.js"></script>
