@@ -16,7 +16,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app); 
 
-// Global Variable for Property Name
 let globalPropertyName = "PROPERTY NAME";
 
 // === 2. DOM ELEMENTS ===
@@ -51,6 +50,11 @@ const historyModal = document.getElementById('history-modal');
 const closeModal = document.getElementById('close-modal');
 const historyTableBody = document.getElementById('history-table-body');
 const modalTenantName = document.getElementById('modal-tenant-name');
+
+// DOM Elements for EDIT Modal
+const editModal = document.getElementById('edit-modal');
+const closeEditModal = document.getElementById('close-edit-modal');
+const editTenantForm = document.getElementById('edit-tenant-form');
 
 
 // === 3. AUTHENTICATION LOGIC ===
@@ -116,9 +120,11 @@ if(linkSettings) {
 }
 
 if(closeModal) { closeModal.addEventListener('click', () => { historyModal.classList.add('hidden'); }); }
+// Close Edit Modal event
+if(closeEditModal) { closeEditModal.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
 
 
-// === 5. SETTINGS LOGIC (Load & Save) ===
+// === 5. SETTINGS LOGIC ===
 async function loadSettings() {
     try {
         const docRef = doc(db, "settings", "config");
@@ -129,9 +135,7 @@ async function loadSettings() {
                 document.getElementById('setting-property-name').value = globalPropertyName;
             }
         }
-    } catch (error) {
-        console.error("Error loading settings:", error);
-    }
+    } catch (error) {}
 }
 
 if (settingsForm) {
@@ -145,12 +149,7 @@ if (settingsForm) {
             await setDoc(doc(db, "settings", "config"), { propertyName: newName }, { merge: true });
             globalPropertyName = newName;
             alert("Settings saved successfully!");
-        } catch (error) {
-            console.error("Error saving settings:", error);
-            alert("Failed to save settings.");
-        } finally {
-            submitBtn.innerText = "Save Settings";
-        }
+        } catch (error) {} finally { submitBtn.innerText = "Save Settings"; }
     });
 }
 
@@ -175,7 +174,7 @@ if (tenantForm) {
 }
 
 
-// === 7. LOAD TENANTS ===
+// === 7. LOAD TENANTS (With Edit Button) ===
 async function loadTenants() {
     if(!tenantTableBody) return;
     tenantTableBody.innerHTML = "<tr><td colspan='5'>Loading Data...</td></tr>";
@@ -189,35 +188,61 @@ async function loadTenants() {
             const status = tenant.status || 'active';
             const isActive = status === 'active';
             if (isActive) { totalTenants++; totalRent += tenant.rent; }
+            
+            const safeNid = tenant.nid || '';
+            const safeMeter = tenant.meter || '';
+            
             const tr = document.createElement('tr');
             tr.className = isActive ? '' : 'inactive-row';
             tr.innerHTML = `
                 <td>
                     <strong>${tenant.name}</strong> 
                     <span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? 'Active' : 'Inactive'}</span> <br>
-                    <small style="color: gray;">Meter: ${tenant.meter || 'N/A'}</small>
+                    <small style="color: gray;">Meter: ${safeMeter || 'N/A'}</small>
                 </td>
                 <td>${tenant.phone}</td>
-                <td>${tenant.nid}</td>
+                <td>${safeNid || 'N/A'}</td>
                 <td>৳ ${tenant.rent}</td>
                 <td>
-                    <!-- Ekhane data-nid jukto kora hoyeche jeno print er somoy pass kora jay -->
-                    <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}" data-nid="${tenant.nid || 'N/A'}">View History</button>
-                    <button class="btn-toggle-status" data-id="${tenantId}" data-status="${status}">${isActive ? 'Make Inactive' : 'Make Active'}</button>
+                    <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}" data-nid="${safeNid}">History</button>
+                    <!-- Notun Edit Button -->
+                    <button class="btn-edit" data-id="${tenantId}" data-name="${tenant.name}" data-phone="${tenant.phone}" data-nid="${safeNid}" data-rent="${tenant.rent}" data-meter="${safeMeter}">Edit</button>
+                    <button class="btn-toggle-status" data-id="${tenantId}" data-status="${status}">${isActive ? 'Deactivate' : 'Activate'}</button>
                 </td>
             `;
             tenantTableBody.appendChild(tr);
         });
+        
         if(document.getElementById('total-tenants')) document.getElementById('total-tenants').innerText = totalTenants;
         if(document.getElementById('total-rent')) document.getElementById('total-rent').innerText = totalRent;
 
-        // View history te NID receive korar jonno ektu update kora hoyeche
         document.querySelectorAll('.btn-view').forEach(button => { 
             button.addEventListener('click', (e) => { 
                 loadTenantHistory(e.target.getAttribute('data-id'), e.target.getAttribute('data-name'), e.target.getAttribute('data-nid')); 
             }); 
         });
-        document.querySelectorAll('.btn-toggle-status').forEach(button => { button.addEventListener('click', (e) => { toggleTenantStatus(e.target.getAttribute('data-id'), e.target.getAttribute('data-status')); }); });
+        
+        document.querySelectorAll('.btn-toggle-status').forEach(button => { 
+            button.addEventListener('click', (e) => { 
+                toggleTenantStatus(e.target.getAttribute('data-id'), e.target.getAttribute('data-status')); 
+            }); 
+        });
+        
+        // Edit Button Event Listener
+        document.querySelectorAll('.btn-edit').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const btn = e.target;
+                openEditModal(
+                    btn.getAttribute('data-id'),
+                    btn.getAttribute('data-name'),
+                    btn.getAttribute('data-phone'),
+                    btn.getAttribute('data-nid'),
+                    btn.getAttribute('data-rent'),
+                    btn.getAttribute('data-meter')
+                );
+            });
+        });
+        
     } catch (error) {}
 }
 
@@ -236,7 +261,51 @@ if (searchTenant) {
 }
 
 
-// === 8. LOAD TENANT RENT HISTORY & PRINT LOGIC (POS Update) ===
+// === 8. EDIT TENANT LOGIC ===
+function openEditModal(id, name, phone, nid, rent, meter) {
+    if(!editModal) return;
+    
+    document.getElementById('edit-tenant-id').value = id;
+    document.getElementById('edit-tenant-name').value = name;
+    document.getElementById('edit-tenant-phone').value = phone;
+    document.getElementById('edit-tenant-nid').value = nid;
+    document.getElementById('edit-tenant-rent').value = rent;
+    document.getElementById('edit-tenant-meter').value = meter;
+    
+    editModal.classList.remove('hidden');
+}
+
+if(editTenantForm) {
+    editTenantForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = editTenantForm.querySelector('button[type="submit"]');
+        submitBtn.innerText = "Updating...";
+        
+        const tenantId = document.getElementById('edit-tenant-id').value;
+        const updatedData = {
+            name: document.getElementById('edit-tenant-name').value,
+            phone: document.getElementById('edit-tenant-phone').value,
+            nid: document.getElementById('edit-tenant-nid').value,
+            rent: Number(document.getElementById('edit-tenant-rent').value),
+            meter: document.getElementById('edit-tenant-meter').value
+        };
+        
+        try {
+            await updateDoc(doc(db, "tenants", tenantId), updatedData);
+            alert("Tenant info updated successfully!");
+            editModal.classList.add('hidden');
+            loadTenants(); // Table abar load hobe notun data niye
+        } catch(error) {
+            console.error("Error updating tenant:", error);
+            alert("Update failed!");
+        } finally {
+            submitBtn.innerText = "Update Tenant Info";
+        }
+    });
+}
+
+
+// === 9. LOAD TENANT RENT HISTORY & PRINT LOGIC ===
 async function loadTenantHistory(tenantId, tenantName, tenantNid) {
     if(!historyModal) return;
     historyModal.classList.remove('hidden');
@@ -258,7 +327,6 @@ async function loadTenantHistory(tenantId, tenantName, tenantNid) {
                 <td style="color: red;">৳ ${record.dueAmount}</td>
                 <td>${record.paymentDate}</td>
                 <td>
-                    <!-- Print button e ekhon NID o pass kora hocche -->
                     <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${record.rentMonth}', ${record.paidAmount}, ${record.dueAmount}, '${tenantName}', '${tenantNid}')">Print Receipt</button>
                 </td>
             `;
@@ -268,20 +336,16 @@ async function loadTenantHistory(tenantId, tenantName, tenantNid) {
 }
 
 window.printInvoice = function(invoiceNo, month, paidAmount, dueAmount, tenantName, tenantNid) {
-    // Dynamic Settings Title
     const titleElement = document.getElementById('inv-property-title');
     if(titleElement) titleElement.innerText = globalPropertyName;
 
-    // Real-time Date and Time setup
     const now = new Date();
     const realDate = now.toLocaleDateString();
     const realTime = now.toLocaleTimeString();
 
-    // Calculations (Rent + Default Gas Bill)
     const fixedGasBill = 1080;
     const finalTotal = Number(paidAmount) + fixedGasBill;
 
-    // Setting values to POS Template HTML IDs
     document.getElementById('inv-no').innerText = invoiceNo;
     document.getElementById('inv-date').innerText = realDate;
     document.getElementById('inv-time').innerText = realTime;
@@ -293,18 +357,16 @@ window.printInvoice = function(invoiceNo, month, paidAmount, dueAmount, tenantNa
     document.getElementById('inv-due').innerText = dueAmount;
     document.getElementById('inv-total-paid').innerText = finalTotal;
 
-    // Generate Dynamic QR Code using public API
     const qrData = `Invoice:${invoiceNo} | Tenant:${tenantName} | Total:${finalTotal}`;
     document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
-    // Timeout dewa hoyeche jeno QR code ta load howar somoy pay, tarpor print window asbe
     setTimeout(() => {
         window.print();
     }, 500);
 }
 
 
-// === 9. POPULATE DROPDOWN & RENT SUBMIT ===
+// === 10. POPULATE DROPDOWN & RENT SUBMIT ===
 async function populateTenantDropdown() {
     if(!selectTenant) return;
     selectTenant.innerHTML = '<option value="">-- Select Tenant --</option>';
