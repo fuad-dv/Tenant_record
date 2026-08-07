@@ -35,6 +35,7 @@
             <li><a href="#" id="link-add-tenant">Add Tenant</a></li>
             <li><a href="#" id="link-tenant-list">Tenant List</a></li>
             <li><a href="#" id="link-collect-rent">Collect Rent</a></li>
+            <li><a href="#" id="link-settings">Settings</a></li>
             <li style="margin-top: 50px;"><a href="#" id="btn-logout" style="color: #ff4d4d; font-weight: bold;">Logout</a></li>
         </ul>
     </div>
@@ -137,8 +138,19 @@
         </section>
 
     </div>
+    <!-- 5. Settings Section -->
+        <section id="sec-settings" class="hidden">
+            <h2>System Settings</h2>
+            <form id="settings-form">
+                <div class="form-group">
+                    <label>Property / House Name (For Invoice):</label>
+                    <input type="text" id="setting-property-name" placeholder="E.g., Shiraji Villa" required>
+                </div>
+                <button type="submit">Save Settings</button>
+            </form>
+        </section>
 
-    <!-- 5. Rent History Modal (Popup) -->
+    <!-- 6. Rent History Modal (Popup) -->
     <div id="history-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-btn" id="close-modal">&times;</span>
@@ -161,11 +173,11 @@
             </table>
         </div>
     </div>
-    <!-- 6. Printable Invoice Template (Eta by default hidden thakbe) -->
+    <!-- 7. Printable Invoice Template (Eta by default hidden thakbe) -->
     <div id="printable-invoice" class="hidden-print">
         <div class="invoice-box">
             <div class="invoice-header">
-                <h1>SHIRAJI VILLA</h1>
+                <h1 id="inv-property-title">PROPERTY NAME</h1>
                 <p>RENTAL PAYMENT INVOICE</p>
             </div>
             <div class="invoice-details">
