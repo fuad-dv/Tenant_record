@@ -293,6 +293,8 @@ button[type="submit"]:hover {
 
 .btn-toggle-status { background-color: #fef3c7; color: #b45309; }
 .btn-toggle-status:hover { background-color: var(--warning); color: white; }
+.btn-edit { background-color: #e0f2fe; color: #0284c7; }
+.btn-edit:hover { background-color: #0ea5e9; color: white; }
 
 
 /* =========================================
