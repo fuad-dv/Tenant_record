@@ -1,4 +1,4 @@
-# 🏠 Shiraji Villa — Tenant Management System
+# 🏠  Tenant Management System
 
 A lightweight, browser-based **Tenant & Rent Management System** built with vanilla HTML/CSS/JavaScript and **Firebase** (Authentication + Firestore). Designed for landlords/property managers to register tenants, track monthly rent, print thermal-style POS invoices, and manage everything from a clean, modern dashboard — no backend server required.
 
