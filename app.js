@@ -4,7 +4,7 @@ import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAih5VqemWBx7hrY3DKmqrHnP4zEcMs1pY", // Ekhane tomar API key boshabe
+  apiKey: "AIzaSyAih5VqemWBx7hrY3DKmqrHnP4zEcMs1pY", 
   authDomain: "tenant-5d21f.firebaseapp.com",
   projectId: "tenant-5d21f",
   storageBucket: "tenant-5d21f.firebasestorage.app",
@@ -51,11 +51,9 @@ const closeModal = document.getElementById('close-modal');
 const historyTableBody = document.getElementById('history-table-body');
 const modalTenantName = document.getElementById('modal-tenant-name');
 
-// DOM Elements for EDIT Modal
 const editModal = document.getElementById('edit-modal');
 const closeEditModal = document.getElementById('close-edit-modal');
 const editTenantForm = document.getElementById('edit-tenant-form');
-
 
 // === 3. AUTHENTICATION LOGIC ===
 mainContent.style.display = 'none';
@@ -101,7 +99,6 @@ if (btnLogout) {
     });
 }
 
-
 // === 4. NAVIGATION LOGIC ===
 function hideAllSections() {
     secDashboard.classList.remove('active'); secDashboard.classList.add('hidden');
@@ -120,9 +117,7 @@ if(linkSettings) {
 }
 
 if(closeModal) { closeModal.addEventListener('click', () => { historyModal.classList.add('hidden'); }); }
-// Close Edit Modal event
 if(closeEditModal) { closeEditModal.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
-
 
 // === 5. SETTINGS LOGIC ===
 async function loadSettings() {
@@ -153,7 +148,6 @@ if (settingsForm) {
     });
 }
 
-
 // === 6. TENANT REGISTRATION FORM ===
 if (tenantForm) {
     tenantForm.addEventListener('submit', async (e) => {
@@ -173,7 +167,6 @@ if (tenantForm) {
     });
 }
 
-
 // === 7. LOAD TENANTS (With Edit Button) ===
 async function loadTenants() {
     if(!tenantTableBody) return;
@@ -190,7 +183,7 @@ async function loadTenants() {
             if (isActive) { totalTenants++; totalRent += tenant.rent; }
             
             const safeNid = tenant.nid || '';
-            const safeMeter = tenant.meter || '';
+            const safeMeter = tenant.meter || 'N/A';
             
             const tr = document.createElement('tr');
             tr.className = isActive ? '' : 'inactive-row';
@@ -198,14 +191,13 @@ async function loadTenants() {
                 <td>
                     <strong>${tenant.name}</strong> 
                     <span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? 'Active' : 'Inactive'}</span> <br>
-                    <small style="color: gray;">Meter: ${safeMeter || 'N/A'}</small>
+                    <small style="color: gray;">Meter: ${safeMeter}</small>
                 </td>
                 <td>${tenant.phone}</td>
                 <td>${safeNid || 'N/A'}</td>
                 <td>৳ ${tenant.rent}</td>
                 <td>
-                    <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}" data-nid="${safeNid}">History</button>
-                    <!-- Notun Edit Button -->
+                    <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}" data-meter="${safeMeter}">History</button>
                     <button class="btn-edit" data-id="${tenantId}" data-name="${tenant.name}" data-phone="${tenant.phone}" data-nid="${safeNid}" data-rent="${tenant.rent}" data-meter="${safeMeter}">Edit</button>
                     <button class="btn-toggle-status" data-id="${tenantId}" data-status="${status}">${isActive ? 'Deactivate' : 'Activate'}</button>
                 </td>
@@ -218,7 +210,7 @@ async function loadTenants() {
 
         document.querySelectorAll('.btn-view').forEach(button => { 
             button.addEventListener('click', (e) => { 
-                loadTenantHistory(e.target.getAttribute('data-id'), e.target.getAttribute('data-name'), e.target.getAttribute('data-nid')); 
+                loadTenantHistory(e.target.getAttribute('data-id'), e.target.getAttribute('data-name'), e.target.getAttribute('data-meter')); 
             }); 
         });
         
@@ -228,7 +220,6 @@ async function loadTenants() {
             }); 
         });
         
-        // Edit Button Event Listener
         document.querySelectorAll('.btn-edit').forEach(button => {
             button.addEventListener('click', (e) => {
                 const btn = e.target;
@@ -260,7 +251,6 @@ if (searchTenant) {
     });
 }
 
-
 // === 8. EDIT TENANT LOGIC ===
 function openEditModal(id, name, phone, nid, rent, meter) {
     if(!editModal) return;
@@ -270,7 +260,7 @@ function openEditModal(id, name, phone, nid, rent, meter) {
     document.getElementById('edit-tenant-phone').value = phone;
     document.getElementById('edit-tenant-nid').value = nid;
     document.getElementById('edit-tenant-rent').value = rent;
-    document.getElementById('edit-tenant-meter').value = meter;
+    document.getElementById('edit-tenant-meter').value = meter !== 'N/A' ? meter : '';
     
     editModal.classList.remove('hidden');
 }
@@ -294,7 +284,7 @@ if(editTenantForm) {
             await updateDoc(doc(db, "tenants", tenantId), updatedData);
             alert("Tenant info updated successfully!");
             editModal.classList.add('hidden');
-            loadTenants(); // Table abar load hobe notun data niye
+            loadTenants(); 
         } catch(error) {
             console.error("Error updating tenant:", error);
             alert("Update failed!");
@@ -304,9 +294,8 @@ if(editTenantForm) {
     });
 }
 
-
 // === 9. LOAD TENANT RENT HISTORY & PRINT LOGIC ===
-async function loadTenantHistory(tenantId, tenantName, tenantNid) {
+async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
     if(!historyModal) return;
     historyModal.classList.remove('hidden');
     modalTenantName.innerText = tenantName;
@@ -327,7 +316,7 @@ async function loadTenantHistory(tenantId, tenantName, tenantNid) {
                 <td style="color: red;">৳ ${record.dueAmount}</td>
                 <td>${record.paymentDate}</td>
                 <td>
-                    <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${record.rentMonth}', ${record.paidAmount}, ${record.dueAmount}, '${tenantName}', '${tenantNid}')">Print Receipt</button>
+                    <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${record.rentMonth}', ${record.paidAmount}, ${record.dueAmount}, '${tenantName}', '${tenantMeter}')">Print Receipt</button>
                 </td>
             `;
             historyTableBody.appendChild(tr);
@@ -335,7 +324,7 @@ async function loadTenantHistory(tenantId, tenantName, tenantNid) {
     } catch (error) {}
 }
 
-window.printInvoice = function(invoiceNo, month, paidAmount, dueAmount, tenantName, tenantNid) {
+window.printInvoice = function(invoiceNo, month, paidAmount, dueAmount, tenantName, tenantMeter) {
     const titleElement = document.getElementById('inv-property-title');
     if(titleElement) titleElement.innerText = globalPropertyName;
 
@@ -350,7 +339,7 @@ window.printInvoice = function(invoiceNo, month, paidAmount, dueAmount, tenantNa
     document.getElementById('inv-date').innerText = realDate;
     document.getElementById('inv-time').innerText = realTime;
     document.getElementById('inv-tenant-name').innerText = tenantName;
-    document.getElementById('inv-nid').innerText = tenantNid;
+    document.getElementById('inv-meter').innerText = tenantMeter;
     document.getElementById('inv-month').innerText = month;
     
     document.getElementById('inv-rent').innerText = paidAmount;
@@ -364,7 +353,6 @@ window.printInvoice = function(invoiceNo, month, paidAmount, dueAmount, tenantNa
         window.print();
     }, 500);
 }
-
 
 // === 10. POPULATE DROPDOWN & RENT SUBMIT ===
 async function populateTenantDropdown() {
