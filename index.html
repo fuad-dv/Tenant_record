@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Admin Login Screen -->
     <div id="login-screen" class="login-overlay">
         <div class="login-box">
             <h2>Admin Login</h2>
@@ -27,7 +26,6 @@
         </div>
     </div>
 
-    <!-- Sidebar Navigation -->
     <div class="sidebar">
         <h2>Tenant System</h2>
         <ul>
@@ -35,15 +33,13 @@
             <li><a href="#" id="link-add-tenant">Add Tenant</a></li>
             <li><a href="#" id="link-tenant-list">Tenant List</a></li>
             <li><a href="#" id="link-collect-rent">Collect Rent</a></li>
+            <li><a href="#" id="link-collect-advance">Collect Advance</a></li> <!-- NEW MENU -->
             <li><a href="#" id="link-settings">Settings</a></li>
             <li style="margin-top: 50px;"><a href="#" id="btn-logout" style="color: #ff4d4d; font-weight: bold;">Logout</a></li>
         </ul>
     </div>
 
-    <!-- Main Content Area -->
     <div class="main-content">
-
-        <!-- 1. Dashboard Section -->
         <section id="sec-dashboard" class="active">
             <h2>Dashboard</h2>
             <div class="dashboard-cards">
@@ -58,7 +54,6 @@
             </div>
         </section>
 
-        <!-- 2. Add Tenant Section -->
         <section id="sec-add-tenant" class="hidden">
             <h2>Add New Tenant</h2>
             <form id="tenant-form">
@@ -86,15 +81,11 @@
             </form>
         </section>
 
-        <!-- 3. Tenant List Section -->
         <section id="sec-tenant-list" class="hidden">
             <h2>Tenant List</h2>
-            <!-- Notun Search Bar -->
-    <div class="search-container">
-        <input type="text" id="search-tenant" placeholder="Search by Name, Phone, or NID...">
-    </div>
-
-    <table class="tenant-table">
+            <div class="search-container">
+                <input type="text" id="search-tenant" placeholder="Search by Name, Phone, or NID...">
+            </div>
             <table class="tenant-table">
                 <thead>
                     <tr>
@@ -102,16 +93,14 @@
                         <th>Phone</th>
                         <th>NID</th>
                         <th>Rent (৳)</th>
-                        <th>Action</th> <!-- Etai sei notun column -->
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="tenant-table-body">
-                    <!-- Javascript theke data asbe -->
                 </tbody>
             </table>
         </section>
 
-        <!-- 4. Collect Rent Section -->
         <section id="sec-collect-rent" class="hidden">
             <h2>Collect Rent</h2>
             <form id="rent-form">
@@ -133,12 +122,33 @@
                     <label>Due Amount (৳):</label>
                     <input type="number" id="due-amount" value="0" required>
                 </div>
-                <button type="submit">Save Rent Record</button>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+                    <!-- GAS BILL CHECKBOX -->
+                    <input type="checkbox" id="include-gas-bill" checked style="width: auto;">
+                    <label for="include-gas-bill" style="margin: 0; cursor: pointer;">Include Gas Bill (৳ 1080)</label>
+                </div>
+                <button type="submit" style="margin-top: 15px;">Save Rent Record</button>
             </form>
         </section>
 
-    </div>
-    <!-- 5. Settings Section -->
+        <!-- NEW ADVANCE SECTION -->
+        <section id="sec-collect-advance" class="hidden">
+            <h2>Collect Advance</h2>
+            <form id="advance-form">
+                <div class="form-group">
+                    <label>Select Tenant:</label>
+                    <select id="select-advance-tenant" required>
+                        <option value="">-- Select Tenant --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Advance Amount (৳):</label>
+                    <input type="number" id="advance-amount" required>
+                </div>
+                <button type="submit">Save Advance Record</button>
+            </form>
+        </section>
+
         <section id="sec-settings" class="hidden">
             <h2>System Settings</h2>
             <form id="settings-form">
@@ -149,13 +159,12 @@
                 <button type="submit">Save Settings</button>
             </form>
         </section>
+    </div>
 
-    <!-- 6. Rent History Modal (Popup) -->
     <div id="history-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-btn" id="close-modal">&times;</span>
             <h2>Rent History: <span id="modal-tenant-name"></span></h2>
-            
             <table class="tenant-table">
                 <thead>
                     <tr>
@@ -168,12 +177,11 @@
                     </tr>
                 </thead>
                 <tbody id="history-table-body">
-                    <!-- Javascript theke history asbe -->
                 </tbody>
             </table>
         </div>
     </div>
-    <!-- 7. POS Thermal Printable Invoice -->
+
     <div id="printable-invoice" class="hidden-print">
         <div class="pos-receipt">
             <div class="pos-header">
@@ -187,7 +195,7 @@
                 <p><span>DATE</span> <span>: <span id="inv-date"></span></span></p>
                 <p><span>TIME</span> <span>: <span id="inv-time"></span></span></p>
                 <p><span>TENANT</span> <span>: <span id="inv-tenant-name"></span></span></p>
-                <p><span>METER NO</span> <span>: <span id="inv-meter"></span></span></p>
+                <!-- Meter removed from here -->
                 <p><span>MONTH</span> <span>: <span id="inv-month"></span></span></p>
             </div>
             
@@ -199,8 +207,9 @@
                     <td class="text-right">TK <span id="inv-rent"></span></td>
                 </tr>
                 <tr>
-                    <td>GAS BILL (Fixed)</td>
-                    <td class="text-right">TK 1080</td>
+                    <td>GAS BILL</td>
+                    <!-- Dynamic gas bill ID -->
+                    <td class="text-right">TK <span id="inv-gas-bill"></span></td>
                 </tr>
                 <tr>
                     <td>DUE AMOUNT</td>
@@ -217,6 +226,11 @@
             <div class="divider">--------------------------------</div>
             
             <div class="pos-footer">
+                <!-- METER BIG DISPLAY -->
+                <div style="font-size: 16px; font-weight: bold; padding: 5px; border: 2px dashed #000; margin-bottom: 10px;">
+                    METER NO: <br> <span id="inv-meter" style="font-size: 18px;"></span>
+                </div>
+                
                 <p>Scan to verify invoice</p>
                 <img id="qr-code-img" src="" alt="QR Code">
                 <p class="greeting">Thank You!</p>
@@ -224,14 +238,13 @@
             </div>
         </div>
     </div>
-    <!-- 8. Edit Tenant Modal -->
+
     <div id="edit-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-btn" id="close-edit-modal">&times;</span>
             <h2>Edit Tenant Info</h2>
             <form id="edit-tenant-form">
                 <input type="hidden" id="edit-tenant-id">
-                
                 <div class="form-group">
                     <label>Tenant Name:</label>
                     <input type="text" id="edit-tenant-name" required>
@@ -252,14 +265,10 @@
                     <label>Meter Number:</label>
                     <input type="text" id="edit-tenant-meter">
                 </div>
-                
                 <button type="submit">Update Tenant Info</button>
             </form>
         </div>
     </div>
-
-    <!-- Firebase ebang Custom JS link -->
     <script type="module" src="app.js"></script>
-
 </body>
 </html>
