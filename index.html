@@ -182,11 +182,13 @@
         </div>
     </div>
 
+<!-- 7. POS Thermal Printable Invoice -->
     <div id="printable-invoice" class="hidden-print">
         <div class="pos-receipt">
             <div class="pos-header">
                 <h2 id="inv-property-title">PROPERTY NAME</h2>
-                <p>RENT PAYMENT RECEIPT</p>
+                <!-- Notun ID: inv-receipt-type -->
+                <p id="inv-receipt-type">RENT PAYMENT RECEIPT</p>
                 <div class="divider">--------------------------------</div>
             </div>
             
@@ -195,7 +197,6 @@
                 <p><span>DATE</span> <span>: <span id="inv-date"></span></span></p>
                 <p><span>TIME</span> <span>: <span id="inv-time"></span></span></p>
                 <p><span>TENANT</span> <span>: <span id="inv-tenant-name"></span></span></p>
-                <!-- Meter removed from here -->
                 <p><span>MONTH</span> <span>: <span id="inv-month"></span></span></p>
             </div>
             
@@ -203,15 +204,17 @@
             
             <table class="pos-table">
                 <tr>
-                    <td>RENT AMOUNT</td>
+                    <!-- Notun ID: inv-rent-label -->
+                    <td id="inv-rent-label">RENT AMOUNT</td>
                     <td class="text-right">TK <span id="inv-rent"></span></td>
                 </tr>
-                <tr>
+                <!-- Notun ID: inv-gas-row -->
+                <tr id="inv-gas-row">
                     <td>GAS BILL</td>
-                    <!-- Dynamic gas bill ID -->
                     <td class="text-right">TK <span id="inv-gas-bill"></span></td>
                 </tr>
-                <tr>
+                <!-- Notun ID: inv-due-row -->
+                <tr id="inv-due-row">
                     <td>DUE AMOUNT</td>
                     <td class="text-right">TK <span id="inv-due"></span></td>
                 </tr>
@@ -226,7 +229,6 @@
             <div class="divider">--------------------------------</div>
             
             <div class="pos-footer">
-                <!-- METER BIG DISPLAY -->
                 <div style="font-size: 16px; font-weight: bold; padding: 5px; border: 2px dashed #000; margin-bottom: 10px;">
                     METER NO: <br> <span id="inv-meter" style="font-size: 18px;"></span>
                 </div>
@@ -236,37 +238,6 @@
                 <p class="greeting">Thank You!</p>
                 <p class="software-credit">System by Shiraji Villa</p>
             </div>
-        </div>
-    </div>
-
-    <div id="edit-modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close-btn" id="close-edit-modal">&times;</span>
-            <h2>Edit Tenant Info</h2>
-            <form id="edit-tenant-form">
-                <input type="hidden" id="edit-tenant-id">
-                <div class="form-group">
-                    <label>Tenant Name:</label>
-                    <input type="text" id="edit-tenant-name" required>
-                </div>
-                <div class="form-group">
-                    <label>Phone Number:</label>
-                    <input type="text" id="edit-tenant-phone" required>
-                </div>
-                <div class="form-group">
-                    <label>NID Number:</label>
-                    <input type="text" id="edit-tenant-nid">
-                </div>
-                <div class="form-group">
-                    <label>Monthly Rent (৳):</label>
-                    <input type="number" id="edit-tenant-rent" required>
-                </div>
-                <div class="form-group">
-                    <label>Meter Number:</label>
-                    <input type="text" id="edit-tenant-meter">
-                </div>
-                <button type="submit">Update Tenant Info</button>
-            </form>
         </div>
     </div>
     <script type="module" src="app.js"></script>
