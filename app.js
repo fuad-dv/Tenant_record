@@ -28,23 +28,23 @@ const linkDashboard = document.getElementById('link-dashboard');
 const linkAddTenant = document.getElementById('link-add-tenant');
 const linkTenantList = document.getElementById('link-tenant-list');
 const linkCollectRent = document.getElementById('link-collect-rent');
-const linkCollectAdvance = document.getElementById('link-collect-advance'); // NEW
+const linkCollectAdvance = document.getElementById('link-collect-advance'); 
 const linkSettings = document.getElementById('link-settings'); 
 
 const secDashboard = document.getElementById('sec-dashboard');
 const secAddTenant = document.getElementById('sec-add-tenant');
 const secTenantList = document.getElementById('sec-tenant-list');
 const secCollectRent = document.getElementById('sec-collect-rent');
-const secCollectAdvance = document.getElementById('sec-collect-advance'); // NEW
+const secCollectAdvance = document.getElementById('sec-collect-advance'); 
 const secSettings = document.getElementById('sec-settings'); 
 
 const tenantForm = document.getElementById('tenant-form');
 const rentForm = document.getElementById('rent-form');
-const advanceForm = document.getElementById('advance-form'); // NEW
+const advanceForm = document.getElementById('advance-form'); 
 const settingsForm = document.getElementById('settings-form'); 
 const tenantTableBody = document.getElementById('tenant-table-body');
 const selectTenant = document.getElementById('select-tenant');
-const selectAdvanceTenant = document.getElementById('select-advance-tenant'); // NEW
+const selectAdvanceTenant = document.getElementById('select-advance-tenant'); 
 const searchTenant = document.getElementById('search-tenant');
 
 const historyModal = document.getElementById('history-modal');
@@ -271,30 +271,57 @@ if(editTenantForm) {
     });
 }
 
+// === LOAD COMBINED RENT & ADVANCE HISTORY ===
 async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
     if(!historyModal) return;
     historyModal.classList.remove('hidden');
     modalTenantName.innerText = tenantName;
     historyTableBody.innerHTML = "<tr><td colspan='6'>History Loading...</td></tr>";
     try {
-        const q = query(collection(db, "rent_records"), where("tenantId", "==", tenantId));
-        const querySnapshot = await getDocs(q);
+        const qRent = query(collection(db, "rent_records"), where("tenantId", "==", tenantId));
+        const rentSnap = await getDocs(qRent);
+        
+        const qAdv = query(collection(db, "advance_records"), where("tenantId", "==", tenantId));
+        const advSnap = await getDocs(qAdv);
+        
+        let allRecords = [];
+
+        rentSnap.forEach((doc) => {
+            let data = doc.data();
+            data.recordType = 'rent';
+            allRecords.push(data);
+        });
+
+        advSnap.forEach((doc) => {
+            let data = doc.data();
+            data.recordType = 'advance';
+            allRecords.push(data);
+        });
+
+        allRecords.sort((a, b) => b.timestamp - a.timestamp); // Notun gulo upore thakbe
+
         historyTableBody.innerHTML = ""; 
-        if (querySnapshot.empty) { historyTableBody.innerHTML = "<tr><td colspan='6'>No rental history found!</td></tr>"; return; }
-        querySnapshot.forEach((doc) => {
-            const record = doc.data();
+        if (allRecords.length === 0) { historyTableBody.innerHTML = "<tr><td colspan='6'>No rental or advance history found!</td></tr>"; return; }
+        
+        allRecords.forEach((record) => {
             const invoiceNo = record.invoiceId || 'N/A'; 
-            const gasBillAmt = record.gasBill !== undefined ? record.gasBill : 1080; // Old records default to 1080
+            const isAdvance = record.recordType === 'advance';
+            
+            // UI Formatting
+            const monthBadge = isAdvance ? '<span style="background:#fef08a; padding:2px 6px; border-radius:4px; font-size:12px; font-weight:bold; color:#854d0e;">ADVANCE</span>' : record.rentMonth;
+            const paidAmt = isAdvance ? record.advanceAmount : record.paidAmount;
+            const dueAmt = isAdvance ? 'N/A' : `৳ ${record.dueAmount}`;
+            const gasBillAmt = isAdvance ? 0 : (record.gasBill !== undefined ? record.gasBill : 1080);
             
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="font-family: monospace; font-weight: bold;">${invoiceNo}</td>
-                <td>${record.rentMonth}</td>
-                <td style="color: green; font-weight: bold;">৳ ${record.paidAmount}</td>
-                <td style="color: red;">৳ ${record.dueAmount}</td>
+                <td>${monthBadge}</td>
+                <td style="color: green; font-weight: bold;">৳ ${paidAmt}</td>
+                <td style="color: ${isAdvance ? 'gray' : 'red'};">${dueAmt}</td>
                 <td>${record.paymentDate}</td>
                 <td>
-                    <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${record.rentMonth}', ${record.paidAmount}, ${gasBillAmt}, ${record.dueAmount}, '${tenantName}', '${tenantMeter}')">Print Receipt</button>
+                    <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${isAdvance ? 'ADVANCE' : record.rentMonth}', ${paidAmt}, ${gasBillAmt}, '${isAdvance ? 0 : record.dueAmount}', '${tenantName}', '${tenantMeter}', '${record.recordType}')">Print</button>
                 </td>
             `;
             historyTableBody.appendChild(tr);
@@ -302,7 +329,7 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
     } catch (error) {}
 }
 
-window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmount, tenantName, tenantMeter) {
+window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmount, tenantName, tenantMeter, type) {
     const titleElement = document.getElementById('inv-property-title');
     if(titleElement) titleElement.innerText = globalPropertyName;
 
@@ -318,10 +345,32 @@ window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmou
     document.getElementById('inv-month').innerText = month;
     
     document.getElementById('inv-rent').innerText = paidAmount;
-    document.getElementById('inv-gas-bill').innerText = gasBillAmt; // dynamic gas bill
-    document.getElementById('inv-due').innerText = dueAmount;
     document.getElementById('inv-total-paid').innerText = finalTotal;
-    document.getElementById('inv-meter').innerText = tenantMeter; // BIG Meter text
+    document.getElementById('inv-meter').innerText = tenantMeter; 
+
+    // Dynamic Elements depending on record type
+    const receiptType = document.getElementById('inv-receipt-type');
+    const rentLabel = document.getElementById('inv-rent-label');
+    const gasRow = document.getElementById('inv-gas-row');
+    const dueRow = document.getElementById('inv-due-row');
+
+    if (type === 'advance') {
+        if(receiptType) receiptType.innerText = "ADVANCE PAYMENT RECEIPT";
+        if(rentLabel) rentLabel.innerText = "ADVANCE AMOUNT";
+        if(gasRow) gasRow.style.display = 'none'; // Hide Gas Bill
+        if(dueRow) dueRow.style.display = 'none'; // Hide Due Amount
+    } else {
+        if(receiptType) receiptType.innerText = "RENT PAYMENT RECEIPT";
+        if(rentLabel) rentLabel.innerText = "RENT AMOUNT";
+        if(gasRow) {
+            gasRow.style.display = ''; 
+            document.getElementById('inv-gas-bill').innerText = gasBillAmt;
+        }
+        if(dueRow) {
+            dueRow.style.display = ''; 
+            document.getElementById('inv-due').innerText = dueAmount;
+        }
+    }
 
     const qrData = `Invoice:${invoiceNo} | Tenant:${tenantName} | Total:${finalTotal}`;
     document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
@@ -329,7 +378,6 @@ window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmou
     setTimeout(() => { window.print(); }, 500);
 }
 
-// Populate both dropdowns
 async function populateTenantDropdowns() {
     if(selectTenant) selectTenant.innerHTML = '<option value="">-- Select Tenant --</option>';
     if(selectAdvanceTenant) selectAdvanceTenant.innerHTML = '<option value="">-- Select Tenant --</option>';
@@ -361,7 +409,6 @@ if (rentForm) {
         const paidAmount = document.getElementById('paid-amount').value;
         const dueAmount = document.getElementById('due-amount').value;
         
-        // Check gas bill
         const includeGas = document.getElementById('include-gas-bill').checked;
         const gasAmount = includeGas ? 1080 : 0;
 
@@ -387,7 +434,6 @@ if (rentForm) {
     });
 }
 
-// ADVANCE SUBMIT
 if (advanceForm) {
     advanceForm.addEventListener('submit', async (e) => {
         e.preventDefault(); 
@@ -398,14 +444,19 @@ if (advanceForm) {
 
         if (!tenantId) { alert("Please select a tenant!"); submitBtn.innerText = "Save Advance Record"; return; }
 
+        const year = new Date().getFullYear();
+        const randomNum = Math.floor(1000 + Math.random() * 9000); 
+        const generatedInvoiceId = `ADV-${year}-${randomNum}`;
+
         try {
             await addDoc(collection(db, "advance_records"), { 
                 tenantId: tenantId, 
+                invoiceId: generatedInvoiceId,
                 advanceAmount: Number(advanceAmount), 
                 paymentDate: new Date().toLocaleDateString(), 
                 timestamp: new Date() 
             });
-            alert(`Advance of ৳${advanceAmount} saved successfully!`);
+            alert(`Advance of ৳${advanceAmount} saved successfully! Invoice No: ${generatedInvoiceId}`);
             advanceForm.reset(); 
         } catch (error) {} finally { submitBtn.innerText = "Save Advance Record"; }
     });
