@@ -1,4 +1,3 @@
-// === 1. FIREBASE SETUP & IMPORTS ===
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"; 
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -18,12 +17,10 @@ const auth = getAuth(app);
 
 let globalPropertyName = "PROPERTY NAME";
 
-// === 2. DOM ELEMENTS ===
 const loginScreen = document.getElementById('login-screen');
 const loginForm = document.getElementById('login-form');
 const loginError = document.getElementById('login-error');
 const btnLogout = document.getElementById('btn-logout');
-
 const mainContent = document.querySelector('.main-content');
 const sidebar = document.querySelector('.sidebar');
 
@@ -31,19 +28,23 @@ const linkDashboard = document.getElementById('link-dashboard');
 const linkAddTenant = document.getElementById('link-add-tenant');
 const linkTenantList = document.getElementById('link-tenant-list');
 const linkCollectRent = document.getElementById('link-collect-rent');
+const linkCollectAdvance = document.getElementById('link-collect-advance'); // NEW
 const linkSettings = document.getElementById('link-settings'); 
 
 const secDashboard = document.getElementById('sec-dashboard');
 const secAddTenant = document.getElementById('sec-add-tenant');
 const secTenantList = document.getElementById('sec-tenant-list');
 const secCollectRent = document.getElementById('sec-collect-rent');
+const secCollectAdvance = document.getElementById('sec-collect-advance'); // NEW
 const secSettings = document.getElementById('sec-settings'); 
 
 const tenantForm = document.getElementById('tenant-form');
 const rentForm = document.getElementById('rent-form');
+const advanceForm = document.getElementById('advance-form'); // NEW
 const settingsForm = document.getElementById('settings-form'); 
 const tenantTableBody = document.getElementById('tenant-table-body');
 const selectTenant = document.getElementById('select-tenant');
+const selectAdvanceTenant = document.getElementById('select-advance-tenant'); // NEW
 const searchTenant = document.getElementById('search-tenant');
 
 const historyModal = document.getElementById('history-modal');
@@ -55,7 +56,6 @@ const editModal = document.getElementById('edit-modal');
 const closeEditModal = document.getElementById('close-edit-modal');
 const editTenantForm = document.getElementById('edit-tenant-form');
 
-// === 3. AUTHENTICATION LOGIC ===
 mainContent.style.display = 'none';
 sidebar.style.display = 'none';
 
@@ -86,9 +86,7 @@ if (loginForm) {
             loginForm.reset();
         } catch (error) {
             loginError.style.display = 'block';
-        } finally {
-            submitBtn.innerText = "Login to Dashboard";
-        }
+        } finally { submitBtn.innerText = "Login to Dashboard"; }
     });
 }
 
@@ -99,19 +97,22 @@ if (btnLogout) {
     });
 }
 
-// === 4. NAVIGATION LOGIC ===
 function hideAllSections() {
     secDashboard.classList.remove('active'); secDashboard.classList.add('hidden');
     secAddTenant.classList.remove('active'); secAddTenant.classList.add('hidden');
     secTenantList.classList.remove('active'); secTenantList.classList.add('hidden');
     secCollectRent.classList.remove('active'); secCollectRent.classList.add('hidden');
+    if(secCollectAdvance) { secCollectAdvance.classList.remove('active'); secCollectAdvance.classList.add('hidden'); }
     if(secSettings) { secSettings.classList.remove('active'); secSettings.classList.add('hidden'); }
 }
 
 linkDashboard.addEventListener('click', () => { hideAllSections(); secDashboard.classList.remove('hidden'); secDashboard.classList.add('active'); loadTenants(); });
 linkAddTenant.addEventListener('click', () => { hideAllSections(); secAddTenant.classList.remove('hidden'); secAddTenant.classList.add('active'); });
 linkTenantList.addEventListener('click', () => { hideAllSections(); secTenantList.classList.remove('hidden'); secTenantList.classList.add('active'); loadTenants(); });
-linkCollectRent.addEventListener('click', () => { hideAllSections(); secCollectRent.classList.remove('hidden'); secCollectRent.classList.add('active'); populateTenantDropdown(); });
+linkCollectRent.addEventListener('click', () => { hideAllSections(); secCollectRent.classList.remove('hidden'); secCollectRent.classList.add('active'); populateTenantDropdowns(); });
+if(linkCollectAdvance) {
+    linkCollectAdvance.addEventListener('click', () => { hideAllSections(); secCollectAdvance.classList.remove('hidden'); secCollectAdvance.classList.add('active'); populateTenantDropdowns(); });
+}
 if(linkSettings) {
     linkSettings.addEventListener('click', () => { hideAllSections(); secSettings.classList.remove('hidden'); secSettings.classList.add('active'); });
 }
@@ -119,7 +120,6 @@ if(linkSettings) {
 if(closeModal) { closeModal.addEventListener('click', () => { historyModal.classList.add('hidden'); }); }
 if(closeEditModal) { closeEditModal.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
 
-// === 5. SETTINGS LOGIC ===
 async function loadSettings() {
     try {
         const docRef = doc(db, "settings", "config");
@@ -138,7 +138,6 @@ if (settingsForm) {
         e.preventDefault();
         const submitBtn = settingsForm.querySelector('button[type="submit"]');
         submitBtn.innerText = "Saving...";
-        
         const newName = document.getElementById('setting-property-name').value;
         try {
             await setDoc(doc(db, "settings", "config"), { propertyName: newName }, { merge: true });
@@ -148,7 +147,6 @@ if (settingsForm) {
     });
 }
 
-// === 6. TENANT REGISTRATION FORM ===
 if (tenantForm) {
     tenantForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -167,7 +165,6 @@ if (tenantForm) {
     });
 }
 
-// === 7. LOAD TENANTS (With Edit Button) ===
 async function loadTenants() {
     if(!tenantTableBody) return;
     tenantTableBody.innerHTML = "<tr><td colspan='5'>Loading Data...</td></tr>";
@@ -213,27 +210,17 @@ async function loadTenants() {
                 loadTenantHistory(e.target.getAttribute('data-id'), e.target.getAttribute('data-name'), e.target.getAttribute('data-meter')); 
             }); 
         });
-        
         document.querySelectorAll('.btn-toggle-status').forEach(button => { 
             button.addEventListener('click', (e) => { 
                 toggleTenantStatus(e.target.getAttribute('data-id'), e.target.getAttribute('data-status')); 
             }); 
         });
-        
         document.querySelectorAll('.btn-edit').forEach(button => {
             button.addEventListener('click', (e) => {
                 const btn = e.target;
-                openEditModal(
-                    btn.getAttribute('data-id'),
-                    btn.getAttribute('data-name'),
-                    btn.getAttribute('data-phone'),
-                    btn.getAttribute('data-nid'),
-                    btn.getAttribute('data-rent'),
-                    btn.getAttribute('data-meter')
-                );
+                openEditModal(btn.getAttribute('data-id'), btn.getAttribute('data-name'), btn.getAttribute('data-phone'), btn.getAttribute('data-nid'), btn.getAttribute('data-rent'), btn.getAttribute('data-meter'));
             });
         });
-        
     } catch (error) {}
 }
 
@@ -251,17 +238,14 @@ if (searchTenant) {
     });
 }
 
-// === 8. EDIT TENANT LOGIC ===
 function openEditModal(id, name, phone, nid, rent, meter) {
     if(!editModal) return;
-    
     document.getElementById('edit-tenant-id').value = id;
     document.getElementById('edit-tenant-name').value = name;
     document.getElementById('edit-tenant-phone').value = phone;
     document.getElementById('edit-tenant-nid').value = nid;
     document.getElementById('edit-tenant-rent').value = rent;
     document.getElementById('edit-tenant-meter').value = meter !== 'N/A' ? meter : '';
-    
     editModal.classList.remove('hidden');
 }
 
@@ -270,7 +254,6 @@ if(editTenantForm) {
         e.preventDefault();
         const submitBtn = editTenantForm.querySelector('button[type="submit"]');
         submitBtn.innerText = "Updating...";
-        
         const tenantId = document.getElementById('edit-tenant-id').value;
         const updatedData = {
             name: document.getElementById('edit-tenant-name').value,
@@ -279,22 +262,15 @@ if(editTenantForm) {
             rent: Number(document.getElementById('edit-tenant-rent').value),
             meter: document.getElementById('edit-tenant-meter').value
         };
-        
         try {
             await updateDoc(doc(db, "tenants", tenantId), updatedData);
             alert("Tenant info updated successfully!");
             editModal.classList.add('hidden');
             loadTenants(); 
-        } catch(error) {
-            console.error("Error updating tenant:", error);
-            alert("Update failed!");
-        } finally {
-            submitBtn.innerText = "Update Tenant Info";
-        }
+        } catch(error) { alert("Update failed!"); } finally { submitBtn.innerText = "Update Tenant Info"; }
     });
 }
 
-// === 9. LOAD TENANT RENT HISTORY & PRINT LOGIC ===
 async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
     if(!historyModal) return;
     historyModal.classList.remove('hidden');
@@ -308,6 +284,8 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
         querySnapshot.forEach((doc) => {
             const record = doc.data();
             const invoiceNo = record.invoiceId || 'N/A'; 
+            const gasBillAmt = record.gasBill !== undefined ? record.gasBill : 1080; // Old records default to 1080
+            
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="font-family: monospace; font-weight: bold;">${invoiceNo}</td>
@@ -316,7 +294,7 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
                 <td style="color: red;">৳ ${record.dueAmount}</td>
                 <td>${record.paymentDate}</td>
                 <td>
-                    <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${record.rentMonth}', ${record.paidAmount}, ${record.dueAmount}, '${tenantName}', '${tenantMeter}')">Print Receipt</button>
+                    <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${record.rentMonth}', ${record.paidAmount}, ${gasBillAmt}, ${record.dueAmount}, '${tenantName}', '${tenantMeter}')">Print Receipt</button>
                 </td>
             `;
             historyTableBody.appendChild(tr);
@@ -324,49 +302,50 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
     } catch (error) {}
 }
 
-window.printInvoice = function(invoiceNo, month, paidAmount, dueAmount, tenantName, tenantMeter) {
+window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmount, tenantName, tenantMeter) {
     const titleElement = document.getElementById('inv-property-title');
     if(titleElement) titleElement.innerText = globalPropertyName;
 
     const now = new Date();
     const realDate = now.toLocaleDateString();
     const realTime = now.toLocaleTimeString();
-
-    const fixedGasBill = 1080;
-    const finalTotal = Number(paidAmount) + fixedGasBill;
+    const finalTotal = Number(paidAmount) + Number(gasBillAmt);
 
     document.getElementById('inv-no').innerText = invoiceNo;
     document.getElementById('inv-date').innerText = realDate;
     document.getElementById('inv-time').innerText = realTime;
     document.getElementById('inv-tenant-name').innerText = tenantName;
-    document.getElementById('inv-meter').innerText = tenantMeter;
     document.getElementById('inv-month').innerText = month;
     
     document.getElementById('inv-rent').innerText = paidAmount;
+    document.getElementById('inv-gas-bill').innerText = gasBillAmt; // dynamic gas bill
     document.getElementById('inv-due').innerText = dueAmount;
     document.getElementById('inv-total-paid').innerText = finalTotal;
+    document.getElementById('inv-meter').innerText = tenantMeter; // BIG Meter text
 
     const qrData = `Invoice:${invoiceNo} | Tenant:${tenantName} | Total:${finalTotal}`;
     document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
-    setTimeout(() => {
-        window.print();
-    }, 500);
+    setTimeout(() => { window.print(); }, 500);
 }
 
-// === 10. POPULATE DROPDOWN & RENT SUBMIT ===
-async function populateTenantDropdown() {
-    if(!selectTenant) return;
-    selectTenant.innerHTML = '<option value="">-- Select Tenant --</option>';
+// Populate both dropdowns
+async function populateTenantDropdowns() {
+    if(selectTenant) selectTenant.innerHTML = '<option value="">-- Select Tenant --</option>';
+    if(selectAdvanceTenant) selectAdvanceTenant.innerHTML = '<option value="">-- Select Tenant --</option>';
+    
     try {
         const querySnapshot = await getDocs(collection(db, "tenants"));
         querySnapshot.forEach((doc) => {
             const tenant = doc.data();
             if (tenant.status !== 'inactive') {
-                const option = document.createElement('option');
-                option.value = doc.id;
-                option.textContent = `${tenant.name} (Meter: ${tenant.meter || 'N/A'})`;
-                selectTenant.appendChild(option);
+                const opt1 = document.createElement('option');
+                opt1.value = doc.id; opt1.textContent = `${tenant.name} (Meter: ${tenant.meter || 'N/A'})`;
+                if(selectTenant) selectTenant.appendChild(opt1);
+                
+                const opt2 = document.createElement('option');
+                opt2.value = doc.id; opt2.textContent = `${tenant.name} (Meter: ${tenant.meter || 'N/A'})`;
+                if(selectAdvanceTenant) selectAdvanceTenant.appendChild(opt2);
             }
         });
     } catch (error) {}
@@ -381,15 +360,53 @@ if (rentForm) {
         const rentMonth = document.getElementById('rent-month').value;
         const paidAmount = document.getElementById('paid-amount').value;
         const dueAmount = document.getElementById('due-amount').value;
+        
+        // Check gas bill
+        const includeGas = document.getElementById('include-gas-bill').checked;
+        const gasAmount = includeGas ? 1080 : 0;
+
         if (!tenantId) { alert("Please select a tenant!"); submitBtn.innerText = "Save Rent Record"; return; }
 
         const year = new Date().getFullYear();
         const randomNum = Math.floor(1000 + Math.random() * 9000); 
         const generatedInvoiceId = `INV-${year}-${randomNum}`;
         try {
-            await addDoc(collection(db, "rent_records"), { tenantId: tenantId, invoiceId: generatedInvoiceId, rentMonth: rentMonth, paidAmount: Number(paidAmount), dueAmount: Number(dueAmount), paymentDate: new Date().toLocaleDateString(), timestamp: new Date() });
+            await addDoc(collection(db, "rent_records"), { 
+                tenantId: tenantId, 
+                invoiceId: generatedInvoiceId, 
+                rentMonth: rentMonth, 
+                paidAmount: Number(paidAmount), 
+                gasBill: gasAmount,
+                dueAmount: Number(dueAmount), 
+                paymentDate: new Date().toLocaleDateString(), 
+                timestamp: new Date() 
+            });
             alert(`Rent saved successfully! Invoice No: ${generatedInvoiceId}`);
             rentForm.reset(); 
         } catch (error) {} finally { submitBtn.innerText = "Save Rent Record"; }
+    });
+}
+
+// ADVANCE SUBMIT
+if (advanceForm) {
+    advanceForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        const submitBtn = advanceForm.querySelector('button[type="submit"]');
+        submitBtn.innerText = "Saving Advance...";
+        const tenantId = document.getElementById('select-advance-tenant').value;
+        const advanceAmount = document.getElementById('advance-amount').value;
+
+        if (!tenantId) { alert("Please select a tenant!"); submitBtn.innerText = "Save Advance Record"; return; }
+
+        try {
+            await addDoc(collection(db, "advance_records"), { 
+                tenantId: tenantId, 
+                advanceAmount: Number(advanceAmount), 
+                paymentDate: new Date().toLocaleDateString(), 
+                timestamp: new Date() 
+            });
+            alert(`Advance of ৳${advanceAmount} saved successfully!`);
+            advanceForm.reset(); 
+        } catch (error) {} finally { submitBtn.innerText = "Save Advance Record"; }
     });
 }
