@@ -216,11 +216,17 @@ async function loadTenants() {
             }); 
         });
         document.querySelectorAll('.btn-edit').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const btn = e.target;
-                openEditModal(btn.getAttribute('data-id'), btn.getAttribute('data-name'), btn.getAttribute('data-phone'), btn.getAttribute('data-nid'), btn.getAttribute('data-rent'), btn.getAttribute('data-meter'));
-            });
-        });
+    button.addEventListener('click', () => {
+        openEditModal(
+            button.getAttribute('data-id'), 
+            button.getAttribute('data-name'), 
+            button.getAttribute('data-phone'), 
+            button.getAttribute('data-nid'), 
+            button.getAttribute('data-rent'), 
+            button.getAttribute('data-meter')
+        );
+    });
+});
     } catch (error) {}
 }
 
