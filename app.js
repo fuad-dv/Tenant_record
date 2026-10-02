@@ -477,7 +477,7 @@ window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmou
     }
 
     // QR Code URL Generate (Mock URL for future online hosting)
-    const qrUrl = `https://tenant-record-three.vercel.app/receipt?inv=${invoiceNo}`;
+    const qrUrl = `https://tenant-record-three.vercel.app/receipt.html?inv=${invoiceNo}`;
     document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrUrl)}`;
 
     setTimeout(() => { window.print(); }, 500);
