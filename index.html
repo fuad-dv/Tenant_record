@@ -22,6 +22,8 @@
                 </div>
                 <button type="submit">Login to Dashboard</button>
                 <p id="login-error" style="color: red; display: none; margin-top: 15px;">Vul Email ba Password!</p>
+                <!-- Guest Button Add kora hoyeche -->
+                <button type="button" id="btn-guest-login">Explore as Guest</button>
             </form>
         </div>
     </div>
@@ -33,13 +35,14 @@
             <li><a href="#" id="link-add-tenant">Add Tenant</a></li>
             <li><a href="#" id="link-tenant-list">Tenant List</a></li>
             <li><a href="#" id="link-collect-rent">Collect Rent</a></li>
-            <li><a href="#" id="link-collect-advance">Collect Advance</a></li> <!-- NEW MENU -->
+            <li><a href="#" id="link-collect-advance">Collect Advance</a></li> 
             <li><a href="#" id="link-settings">Settings</a></li>
             <li style="margin-top: 50px;"><a href="#" id="btn-logout" style="color: #ff4d4d; font-weight: bold;">Logout</a></li>
         </ul>
     </div>
 
     <div class="main-content">
+        <!-- Dashboard -->
         <section id="sec-dashboard" class="active">
             <h2>Dashboard</h2>
             <div class="dashboard-cards">
@@ -54,76 +57,41 @@
             </div>
         </section>
 
+        <!-- Add Tenant -->
         <section id="sec-add-tenant" class="hidden">
             <h2>Add New Tenant</h2>
             <form id="tenant-form">
-                <div class="form-group">
-                    <label>Tenant Name:</label>
-                    <input type="text" id="tenant-name" required>
-                </div>
-                <div class="form-group">
-                    <label>Phone Number:</label>
-                    <input type="text" id="tenant-phone" required>
-                </div>
-                <div class="form-group">
-                    <label>NID Number:</label>
-                    <input type="text" id="tenant-nid">
-                </div>
-                <div class="form-group">
-                    <label>Monthly Rent (৳):</label>
-                    <input type="number" id="tenant-rent" required>
-                </div>
-                <div class="form-group">
-                    <label>Meter Number:</label>
-                    <input type="text" id="tenant-meter">
-                </div>
+                <div class="form-group"><label>Tenant Name:</label><input type="text" id="tenant-name" required></div>
+                <div class="form-group"><label>Phone Number:</label><input type="text" id="tenant-phone" required></div>
+                <div class="form-group"><label>NID Number:</label><input type="text" id="tenant-nid"></div>
+                <div class="form-group"><label>Monthly Rent (৳):</label><input type="number" id="tenant-rent" required></div>
+                <div class="form-group"><label>Meter Number:</label><input type="text" id="tenant-meter"></div>
                 <button type="submit">Register Tenant</button>
             </form>
         </section>
 
+        <!-- Tenant List -->
         <section id="sec-tenant-list" class="hidden">
             <h2>Tenant List</h2>
-            <div class="search-container">
-                <input type="text" id="search-tenant" placeholder="Search by Name, Phone, or NID...">
-            </div>
+            <div class="search-container"><input type="text" id="search-tenant" placeholder="Search by Name, Phone, or NID..."></div>
             <table class="tenant-table">
-                <thead>
-                    <tr>
-                        <th>Name & Meter</th>
-                        <th>Phone</th>
-                        <th>NID</th>
-                        <th>Rent (৳)</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="tenant-table-body">
-                </tbody>
+                <thead><tr><th>Name & Meter</th><th>Phone</th><th>NID</th><th>Rent (৳)</th><th>Action</th></tr></thead>
+                <tbody id="tenant-table-body"></tbody>
             </table>
         </section>
 
+        <!-- Collect Rent -->
         <section id="sec-collect-rent" class="hidden">
             <h2>Collect Rent</h2>
             <form id="rent-form">
                 <div class="form-group">
                     <label>Select Tenant:</label>
-                    <select id="select-tenant" required>
-                        <option value="">-- Select Tenant --</option>
-                    </select>
+                    <select id="select-tenant" required><option value="">-- Select Tenant --</option></select>
                 </div>
-                <div class="form-group">
-                    <label>Rent Month:</label>
-                    <input type="month" id="rent-month" required>
-                </div>
-                <div class="form-group">
-                    <label>Paid Amount (৳):</label>
-                    <input type="number" id="paid-amount" required>
-                </div>
-                <div class="form-group">
-                    <label>Due Amount (৳):</label>
-                    <input type="number" id="due-amount" value="0" required>
-                </div>
+                <div class="form-group"><label>Rent Month:</label><input type="month" id="rent-month" required></div>
+                <div class="form-group"><label>Paid Amount (৳):</label><input type="number" id="paid-amount" required></div>
+                <div class="form-group"><label>Due Amount (৳):</label><input type="number" id="due-amount" value="0" required></div>
                 <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
-                    <!-- GAS BILL CHECKBOX -->
                     <input type="checkbox" id="include-gas-bill" checked style="width: auto;">
                     <label for="include-gas-bill" style="margin: 0; cursor: pointer;">Include Gas Bill (৳ 1080)</label>
                 </div>
@@ -131,67 +99,87 @@
             </form>
         </section>
 
-        <!-- NEW ADVANCE SECTION -->
+        <!-- Collect Advance (Updated with Due) -->
         <section id="sec-collect-advance" class="hidden">
             <h2>Collect Advance</h2>
             <form id="advance-form">
                 <div class="form-group">
                     <label>Select Tenant:</label>
-                    <select id="select-advance-tenant" required>
-                        <option value="">-- Select Tenant --</option>
-                    </select>
+                    <select id="select-advance-tenant" required><option value="">-- Select Tenant --</option></select>
                 </div>
-                <div class="form-group">
-                    <label>Advance Amount (৳):</label>
-                    <input type="number" id="advance-amount" required>
-                </div>
+                <div class="form-group"><label>Paid Advance Amount (৳):</label><input type="number" id="advance-amount" required></div>
+                <!-- Notun Due Option in Advance -->
+                <div class="form-group"><label>Advance Due (৳):</label><input type="number" id="advance-due" value="0" required></div>
                 <button type="submit">Save Advance Record</button>
             </form>
         </section>
 
+        <!-- Settings -->
         <section id="sec-settings" class="hidden">
             <h2>System Settings</h2>
             <form id="settings-form">
-                <div class="form-group">
-                    <label>Property / House Name (For Invoice):</label>
-                    <input type="text" id="setting-property-name" placeholder="E.g., Shiraji Villa" required>
-                </div>
+                <div class="form-group"><label>Property / House Name (For Invoice):</label><input type="text" id="setting-property-name" placeholder="E.g., Shiraji Villa" required></div>
                 <button type="submit">Save Settings</button>
             </form>
         </section>
     </div>
 
+    <!-- Modals -->
     <div id="history-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-btn" id="close-modal">&times;</span>
             <h2>Rent History: <span id="modal-tenant-name"></span></h2>
             <table class="tenant-table">
-                <thead>
-                    <tr>
-                        <th>Invoice No</th>
-                        <th>Month</th>
-                        <th>Paid</th>
-                        <th>Due</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="history-table-body">
-                </tbody>
+                <thead><tr><th>Invoice No</th><th>Month</th><th>Paid</th><th>Due</th><th>Date</th><th>Action</th></tr></thead>
+                <tbody id="history-table-body"></tbody>
             </table>
         </div>
     </div>
 
-<!-- 7. POS Thermal Printable Invoice -->
+    <!-- Due Payment Modal -->
+    <div id="due-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close-btn" id="close-due-modal">&times;</span>
+            <h2>Pay Due Amount</h2>
+            <form id="due-form">
+                <input type="hidden" id="due-record-id">
+                <input type="hidden" id="due-record-type">
+                <input type="hidden" id="due-current-paid">
+                <input type="hidden" id="due-current-due">
+                <p style="margin-bottom: 15px; font-weight: bold; color: var(--danger);">Current Due: ৳<span id="current-due-display">0</span></p>
+                <div class="form-group">
+                    <label>Paying Amount (৳):</label>
+                    <input type="number" id="pay-due-amount" required>
+                </div>
+                <button type="submit">Update Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" id="close-edit-modal">&times;</span>
+            <h2>Edit Tenant Info</h2>
+            <form id="edit-tenant-form">
+                <input type="hidden" id="edit-tenant-id">
+                <div class="form-group"><label>Tenant Name:</label><input type="text" id="edit-tenant-name" required></div>
+                <div class="form-group"><label>Phone Number:</label><input type="text" id="edit-tenant-phone" required></div>
+                <div class="form-group"><label>NID Number:</label><input type="text" id="edit-tenant-nid"></div>
+                <div class="form-group"><label>Monthly Rent (৳):</label><input type="number" id="edit-tenant-rent" required></div>
+                <div class="form-group"><label>Meter Number:</label><input type="text" id="edit-tenant-meter"></div>
+                <button type="submit">Update Tenant Info</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Thermal Printable Invoice -->
     <div id="printable-invoice" class="hidden-print">
         <div class="pos-receipt">
             <div class="pos-header">
                 <h2 id="inv-property-title">PROPERTY NAME</h2>
-                <!-- Notun ID: inv-receipt-type -->
                 <p id="inv-receipt-type">RENT PAYMENT RECEIPT</p>
                 <div class="divider">--------------------------------</div>
             </div>
-            
             <div class="pos-info">
                 <p><span>INV NO</span> <span>: <span id="inv-no"></span></span></p>
                 <p><span>DATE</span> <span>: <span id="inv-date"></span></span></p>
@@ -199,40 +187,19 @@
                 <p><span>TENANT</span> <span>: <span id="inv-tenant-name"></span></span></p>
                 <p><span>MONTH</span> <span>: <span id="inv-month"></span></span></p>
             </div>
-            
             <div class="divider">--------------------------------</div>
-            
             <table class="pos-table">
-                <tr>
-                    <!-- Notun ID: inv-rent-label -->
-                    <td id="inv-rent-label">RENT AMOUNT</td>
-                    <td class="text-right">TK <span id="inv-rent"></span></td>
-                </tr>
-                <!-- Notun ID: inv-gas-row -->
-                <tr id="inv-gas-row">
-                    <td>GAS BILL</td>
-                    <td class="text-right">TK <span id="inv-gas-bill"></span></td>
-                </tr>
-                <!-- Notun ID: inv-due-row -->
-                <tr id="inv-due-row">
-                    <td>DUE AMOUNT</td>
-                    <td class="text-right">TK <span id="inv-due"></span></td>
-                </tr>
+                <tr><td id="inv-rent-label">RENT AMOUNT</td><td class="text-right">TK <span id="inv-rent"></span></td></tr>
+                <tr id="inv-gas-row"><td>GAS BILL</td><td class="text-right">TK <span id="inv-gas-bill"></span></td></tr>
+                <tr id="inv-due-row"><td>DUE AMOUNT</td><td class="text-right">TK <span id="inv-due"></span></td></tr>
             </table>
-            
             <div class="divider">--------------------------------</div>
-            
-            <div class="pos-total">
-                <h3>FINAL TOTAL : TK <span id="inv-total-paid"></span></h3>
-            </div>
-            
+            <div class="pos-total"><h3>FINAL TOTAL : TK <span id="inv-total-paid"></span></h3></div>
             <div class="divider">--------------------------------</div>
-            
             <div class="pos-footer">
                 <div style="font-size: 16px; font-weight: bold; padding: 5px; border: 2px dashed #000; margin-bottom: 10px;">
                     METER NO: <br> <span id="inv-meter" style="font-size: 18px;"></span>
                 </div>
-                
                 <p>Scan to verify invoice</p>
                 <img id="qr-code-img" src="" alt="QR Code">
                 <p class="greeting">Thank You!</p>
@@ -240,37 +207,7 @@
             </div>
         </div>
     </div>
-    <!-- 8. Edit Tenant Modal -->
-    <div id="edit-modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close-btn" id="close-edit-modal">&times;</span>
-            <h2>Edit Tenant Info</h2>
-            <form id="edit-tenant-form">
-                <input type="hidden" id="edit-tenant-id">
-                <div class="form-group">
-                    <label>Tenant Name:</label>
-                    <input type="text" id="edit-tenant-name" required>
-                </div>
-                <div class="form-group">
-                    <label>Phone Number:</label>
-                    <input type="text" id="edit-tenant-phone" required>
-                </div>
-                <div class="form-group">
-                    <label>NID Number:</label>
-                    <input type="text" id="edit-tenant-nid">
-                </div>
-                <div class="form-group">
-                    <label>Monthly Rent (৳):</label>
-                    <input type="number" id="edit-tenant-rent" required>
-                </div>
-                <div class="form-group">
-                    <label>Meter Number:</label>
-                    <input type="text" id="edit-tenant-meter">
-                </div>
-                <button type="submit">Update Tenant Info</button>
-            </form>
-        </div>
-    </div>
+    
     <script type="module" src="app.js"></script>
 </body>
 </html>
