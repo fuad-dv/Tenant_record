@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"; 
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAih5VqemWBx7hrY3DKmqrHnP4zEcMs1pY", 
@@ -16,9 +16,11 @@ const db = getFirestore(app);
 const auth = getAuth(app); 
 
 let globalPropertyName = "PROPERTY NAME";
+let isGuestMode = false;
 
 const loginScreen = document.getElementById('login-screen');
 const loginForm = document.getElementById('login-form');
+const btnGuestLogin = document.getElementById('btn-guest-login');
 const loginError = document.getElementById('login-error');
 const btnLogout = document.getElementById('btn-logout');
 const mainContent = document.querySelector('.main-content');
@@ -42,6 +44,7 @@ const tenantForm = document.getElementById('tenant-form');
 const rentForm = document.getElementById('rent-form');
 const advanceForm = document.getElementById('advance-form'); 
 const settingsForm = document.getElementById('settings-form'); 
+const dueForm = document.getElementById('due-form');
 const tenantTableBody = document.getElementById('tenant-table-body');
 const selectTenant = document.getElementById('select-tenant');
 const selectAdvanceTenant = document.getElementById('select-advance-tenant'); 
@@ -56,14 +59,19 @@ const editModal = document.getElementById('edit-modal');
 const closeEditModal = document.getElementById('close-edit-modal');
 const editTenantForm = document.getElementById('edit-tenant-form');
 
+const dueModal = document.getElementById('due-modal');
+const closeDueModal = document.getElementById('close-due-modal');
+
 mainContent.style.display = 'none';
 sidebar.style.display = 'none';
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        isGuestMode = user.isAnonymous; // Track if it's a guest
         loginScreen.classList.add('hidden-login');
         mainContent.style.display = 'block';
         sidebar.style.display = 'block';
+        if(isGuestMode) alert("Logged in as GUEST. You can view data, but saving/updating is disabled.");
         loadSettings(); 
         loadTenants(); 
     } else {
@@ -73,6 +81,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// Admin Login
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -87,6 +96,18 @@ if (loginForm) {
         } catch (error) {
             loginError.style.display = 'block';
         } finally { submitBtn.innerText = "Login to Dashboard"; }
+    });
+}
+
+// Guest Login
+if (btnGuestLogin) {
+    btnGuestLogin.addEventListener('click', async () => {
+        btnGuestLogin.innerText = "Entering...";
+        try {
+            await signInAnonymously(auth);
+        } catch (error) {
+            alert("Guest login failed. Please check internet connection.");
+        } finally { btnGuestLogin.innerText = "Explore as Guest"; }
     });
 }
 
@@ -119,6 +140,15 @@ if(linkSettings) {
 
 if(closeModal) { closeModal.addEventListener('click', () => { historyModal.classList.add('hidden'); }); }
 if(closeEditModal) { closeEditModal.addEventListener('click', () => { editModal.classList.add('hidden'); }); }
+if(closeDueModal) { closeDueModal.addEventListener('click', () => { dueModal.classList.add('hidden'); }); }
+
+function checkGuest() {
+    if(isGuestMode) {
+        alert("You are in Guest Mode! Modifying data is disabled.");
+        return true;
+    }
+    return false;
+}
 
 async function loadSettings() {
     try {
@@ -136,6 +166,7 @@ async function loadSettings() {
 if (settingsForm) {
     settingsForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if(checkGuest()) return;
         const submitBtn = settingsForm.querySelector('button[type="submit"]');
         submitBtn.innerText = "Saving...";
         const newName = document.getElementById('setting-property-name').value;
@@ -150,6 +181,7 @@ if (settingsForm) {
 if (tenantForm) {
     tenantForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if(checkGuest()) return;
         const submitBtn = tenantForm.querySelector('button[type="submit"]');
         submitBtn.innerText = "Registering...";
         const name = document.getElementById('tenant-name').value;
@@ -216,21 +248,22 @@ async function loadTenants() {
             }); 
         });
         document.querySelectorAll('.btn-edit').forEach(button => {
-    button.addEventListener('click', () => {
-        openEditModal(
-            button.getAttribute('data-id'), 
-            button.getAttribute('data-name'), 
-            button.getAttribute('data-phone'), 
-            button.getAttribute('data-nid'), 
-            button.getAttribute('data-rent'), 
-            button.getAttribute('data-meter')
-        );
-    });
-});
+            button.addEventListener('click', () => {
+                openEditModal(
+                    button.getAttribute('data-id'), 
+                    button.getAttribute('data-name'), 
+                    button.getAttribute('data-phone'), 
+                    button.getAttribute('data-nid'), 
+                    button.getAttribute('data-rent'), 
+                    button.getAttribute('data-meter')
+                );
+            });
+        });
     } catch (error) {}
 }
 
 async function toggleTenantStatus(tenantId, currentStatus) {
+    if(checkGuest()) return;
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     if(confirm(`Are you sure you want to mark this tenant as ${newStatus}?`)) {
         try { await updateDoc(doc(db, "tenants", tenantId), { status: newStatus }); loadTenants(); } catch(error) {}
@@ -258,6 +291,7 @@ function openEditModal(id, name, phone, nid, rent, meter) {
 if(editTenantForm) {
     editTenantForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if(checkGuest()) return;
         const submitBtn = editTenantForm.querySelector('button[type="submit"]');
         submitBtn.innerText = "Updating...";
         const tenantId = document.getElementById('edit-tenant-id').value;
@@ -283,6 +317,10 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
     historyModal.classList.remove('hidden');
     modalTenantName.innerText = tenantName;
     historyTableBody.innerHTML = "<tr><td colspan='6'>History Loading...</td></tr>";
+    
+    // Globally saving tenant info for reload after due payment
+    window.currentHistoryTenant = { id: tenantId, name: tenantName, meter: tenantMeter };
+
     try {
         const qRent = query(collection(db, "rent_records"), where("tenantId", "==", tenantId));
         const rentSnap = await getDocs(qRent);
@@ -294,17 +332,19 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
 
         rentSnap.forEach((doc) => {
             let data = doc.data();
+            data.recordId = doc.id;
             data.recordType = 'rent';
             allRecords.push(data);
         });
 
         advSnap.forEach((doc) => {
             let data = doc.data();
+            data.recordId = doc.id;
             data.recordType = 'advance';
             allRecords.push(data);
         });
 
-        allRecords.sort((a, b) => b.timestamp - a.timestamp); // Notun gulo upore thakbe
+        allRecords.sort((a, b) => b.timestamp - a.timestamp); 
 
         historyTableBody.innerHTML = ""; 
         if (allRecords.length === 0) { historyTableBody.innerHTML = "<tr><td colspan='6'>No rental or advance history found!</td></tr>"; return; }
@@ -312,40 +352,96 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
         allRecords.forEach((record) => {
             const invoiceNo = record.invoiceId || 'N/A'; 
             const isAdvance = record.recordType === 'advance';
-            
-            // UI Formatting
             const monthBadge = isAdvance ? '<span style="background:#fef08a; padding:2px 6px; border-radius:4px; font-size:12px; font-weight:bold; color:#854d0e;">ADVANCE</span>' : record.rentMonth;
+            
             const paidAmt = isAdvance ? record.advanceAmount : record.paidAmount;
-            const dueAmt = isAdvance ? 'N/A' : `৳ ${record.dueAmount}`;
+            const dueAmt = record.dueAmount !== undefined ? record.dueAmount : 0;
             const gasBillAmt = isAdvance ? 0 : (record.gasBill !== undefined ? record.gasBill : 1080);
             
+            // Due Payment Button UI
+            let actionButtons = `<button class="btn-print" onclick="printInvoice('${invoiceNo}', '${isAdvance ? 'ADVANCE' : record.rentMonth}', ${paidAmt}, ${gasBillAmt}, ${dueAmt}, '${tenantName}', '${tenantMeter}', '${record.recordType}', '${record.paymentDate}')">Print</button>`;
+            
+            if (dueAmt > 0) {
+                actionButtons += `<button class="btn-pay-due" onclick="openDueModal('${record.recordId}', '${record.recordType}', ${dueAmt}, ${paidAmt})">Pay Due</button>`;
+            }
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="font-family: monospace; font-weight: bold;">${invoiceNo}</td>
                 <td>${monthBadge}</td>
                 <td style="color: green; font-weight: bold;">৳ ${paidAmt}</td>
-                <td style="color: ${isAdvance ? 'gray' : 'red'};">${dueAmt}</td>
+                <td style="color: ${dueAmt > 0 ? 'red' : 'gray'};">৳ ${dueAmt}</td>
                 <td>${record.paymentDate}</td>
-                <td>
-                    <button class="btn-print" onclick="printInvoice('${invoiceNo}', '${isAdvance ? 'ADVANCE' : record.rentMonth}', ${paidAmt}, ${gasBillAmt}, '${isAdvance ? 0 : record.dueAmount}', '${tenantName}', '${tenantMeter}', '${record.recordType}')">Print</button>
-                </td>
+                <td>${actionButtons}</td>
             `;
             historyTableBody.appendChild(tr);
         });
     } catch (error) {}
 }
 
-window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmount, tenantName, tenantMeter, type) {
+// DUE PAYMENT LOGIC
+window.openDueModal = function(recordId, recordType, currentDue, currentPaid) {
+    document.getElementById('due-record-id').value = recordId;
+    document.getElementById('due-record-type').value = recordType;
+    document.getElementById('due-current-due').value = currentDue;
+    document.getElementById('due-current-paid').value = currentPaid;
+    document.getElementById('current-due-display').innerText = currentDue;
+    document.getElementById('pay-due-amount').value = '';
+    document.getElementById('pay-due-amount').max = currentDue; 
+    dueModal.classList.remove('hidden');
+}
+
+if(dueForm) {
+    dueForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if(checkGuest()) return;
+        
+        const submitBtn = dueForm.querySelector('button[type="submit"]');
+        submitBtn.innerText = "Updating...";
+        
+        const recordId = document.getElementById('due-record-id').value;
+        const recordType = document.getElementById('due-record-type').value;
+        const payAmount = Number(document.getElementById('pay-due-amount').value);
+        const currentDue = Number(document.getElementById('due-current-due').value);
+        const currentPaid = Number(document.getElementById('due-current-paid').value);
+        
+        if (payAmount > currentDue) {
+            alert("Payment cannot be more than the due amount!");
+            submitBtn.innerText = "Update Payment";
+            return;
+        }
+
+        const newDue = currentDue - payAmount;
+        const newPaid = currentPaid + payAmount;
+        const collectionName = recordType === 'rent' ? 'rent_records' : 'advance_records';
+
+        try {
+            if(recordType === 'rent') {
+                await updateDoc(doc(db, collectionName, recordId), { paidAmount: newPaid, dueAmount: newDue });
+            } else {
+                await updateDoc(doc(db, collectionName, recordId), { advanceAmount: newPaid, dueAmount: newDue });
+            }
+            alert("Due payment updated successfully!");
+            dueModal.classList.add('hidden');
+            
+            // Reload history seamlessly
+            if (window.currentHistoryTenant) {
+                loadTenantHistory(window.currentHistoryTenant.id, window.currentHistoryTenant.name, window.currentHistoryTenant.meter);
+            }
+        } catch(error) { alert("Failed to update due!"); } finally { submitBtn.innerText = "Update Payment"; }
+    });
+}
+
+// INVOICE PRINT LOGIC (Updated Date & QR URL)
+window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmount, tenantName, tenantMeter, type, recordDate) {
     const titleElement = document.getElementById('inv-property-title');
     if(titleElement) titleElement.innerText = globalPropertyName;
 
-    const now = new Date();
-    const realDate = now.toLocaleDateString();
-    const realTime = now.toLocaleTimeString();
+    const realTime = new Date().toLocaleTimeString();
     const finalTotal = Number(paidAmount) + Number(gasBillAmt);
 
     document.getElementById('inv-no').innerText = invoiceNo;
-    document.getElementById('inv-date').innerText = realDate;
+    document.getElementById('inv-date').innerText = recordDate; // Real recorded date
     document.getElementById('inv-time').innerText = realTime;
     document.getElementById('inv-tenant-name').innerText = tenantName;
     document.getElementById('inv-month').innerText = month;
@@ -354,7 +450,6 @@ window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmou
     document.getElementById('inv-total-paid').innerText = finalTotal;
     document.getElementById('inv-meter').innerText = tenantMeter; 
 
-    // Dynamic Elements depending on record type
     const receiptType = document.getElementById('inv-receipt-type');
     const rentLabel = document.getElementById('inv-rent-label');
     const gasRow = document.getElementById('inv-gas-row');
@@ -363,8 +458,11 @@ window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmou
     if (type === 'advance') {
         if(receiptType) receiptType.innerText = "ADVANCE PAYMENT RECEIPT";
         if(rentLabel) rentLabel.innerText = "ADVANCE AMOUNT";
-        if(gasRow) gasRow.style.display = 'none'; // Hide Gas Bill
-        if(dueRow) dueRow.style.display = 'none'; // Hide Due Amount
+        if(gasRow) gasRow.style.display = 'none'; 
+        if(dueRow) {
+            dueRow.style.display = ''; 
+            document.getElementById('inv-due').innerText = dueAmount;
+        }
     } else {
         if(receiptType) receiptType.innerText = "RENT PAYMENT RECEIPT";
         if(rentLabel) rentLabel.innerText = "RENT AMOUNT";
@@ -378,8 +476,9 @@ window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmou
         }
     }
 
-    const qrData = `Invoice:${invoiceNo} | Tenant:${tenantName} | Total:${finalTotal}`;
-    document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+    // QR Code URL Generate (Mock URL for future online hosting)
+    const qrUrl = `https://shirajivilla.web.app/receipt?inv=${invoiceNo}`;
+    document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrUrl)}`;
 
     setTimeout(() => { window.print(); }, 500);
 }
@@ -408,6 +507,7 @@ async function populateTenantDropdowns() {
 if (rentForm) {
     rentForm.addEventListener('submit', async (e) => {
         e.preventDefault(); 
+        if(checkGuest()) return;
         const submitBtn = rentForm.querySelector('button[type="submit"]');
         submitBtn.innerText = "Saving Record...";
         const tenantId = document.getElementById('select-tenant').value;
@@ -443,10 +543,12 @@ if (rentForm) {
 if (advanceForm) {
     advanceForm.addEventListener('submit', async (e) => {
         e.preventDefault(); 
+        if(checkGuest()) return;
         const submitBtn = advanceForm.querySelector('button[type="submit"]');
         submitBtn.innerText = "Saving Advance...";
         const tenantId = document.getElementById('select-advance-tenant').value;
         const advanceAmount = document.getElementById('advance-amount').value;
+        const advanceDue = document.getElementById('advance-due').value;
 
         if (!tenantId) { alert("Please select a tenant!"); submitBtn.innerText = "Save Advance Record"; return; }
 
@@ -459,10 +561,11 @@ if (advanceForm) {
                 tenantId: tenantId, 
                 invoiceId: generatedInvoiceId,
                 advanceAmount: Number(advanceAmount), 
+                dueAmount: Number(advanceDue),
                 paymentDate: new Date().toLocaleDateString(), 
                 timestamp: new Date() 
             });
-            alert(`Advance of ৳${advanceAmount} saved successfully! Invoice No: ${generatedInvoiceId}`);
+            alert(`Advance saved successfully! Invoice No: ${generatedInvoiceId}`);
             advanceForm.reset(); 
         } catch (error) {} finally { submitBtn.innerText = "Save Advance Record"; }
     });
