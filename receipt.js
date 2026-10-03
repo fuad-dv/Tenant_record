@@ -63,6 +63,12 @@ async function verifyInvoice() {
         // Page-e Data set kora
         document.getElementById('loading').style.display = 'none';
         document.getElementById('receipt-content').style.display = 'block';
+        
+        // Meter image section unhide korar logic
+        const meterInfo = document.getElementById('meter-info-card');
+        if (meterInfo) {
+            meterInfo.style.display = 'block';
+        }
 
         document.getElementById('r-inv').innerText = invNo;
         document.getElementById('r-date').innerText = recordData.paymentDate;
@@ -70,18 +76,28 @@ async function verifyInvoice() {
 
         if(type === 'advance') {
             document.getElementById('r-month').innerText = "ADVANCE PAYMENT";
-            document.getElementById('r-gas-line').style.display = 'none';
-            document.getElementById('r-due').innerText = "৳ " + recordData.dueAmount;
+            
+            const gasLine = document.getElementById('r-gas-line');
+            if (gasLine) gasLine.style.display = 'none';
+            
+            // Undefined fix kora hoyeche
+            const advDue = recordData.dueAmount !== undefined ? recordData.dueAmount : 0; 
+            document.getElementById('r-due').innerText = "৳ " + advDue;
             document.getElementById('r-total').innerText = recordData.advanceAmount;
         } else {
             document.getElementById('r-month').innerText = recordData.rentMonth;
             const gasBill = recordData.gasBill !== undefined ? recordData.gasBill : 1080;
             document.getElementById('r-gas').innerText = "৳ " + gasBill;
-            document.getElementById('r-due').innerText = "৳ " + recordData.dueAmount;
+            
+            // Undefined fix kora hoyeche
+            const rentDue = recordData.dueAmount !== undefined ? recordData.dueAmount : 0;
+            document.getElementById('r-due').innerText = "৳ " + rentDue;
+            
             document.getElementById('r-total').innerText = Number(recordData.paidAmount) + gasBill;
         }
 
     } catch (error) {
+        console.error(error);
         document.getElementById('loading').innerText = "Error verifying invoice!";
     }
 }
