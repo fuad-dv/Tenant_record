@@ -67,11 +67,11 @@ sidebar.style.display = 'none';
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        isGuestMode = user.isAnonymous; // Track if it's a guest
+        isGuestMode = user.isAnonymous; 
         loginScreen.classList.add('hidden-login');
         mainContent.style.display = 'block';
         sidebar.style.display = 'block';
-        if(isGuestMode) alert("Logged in as GUEST. You can view data, but saving/updating is disabled.");
+        if(isGuestMode) alert("Logged in as GUEST. Displaying dummy data. Saving or updating is disabled.");
         loadSettings(); 
         loadTenants(); 
     } else {
@@ -81,7 +81,6 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// Admin Login
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -99,7 +98,6 @@ if (loginForm) {
     });
 }
 
-// Guest Login
 if (btnGuestLogin) {
     btnGuestLogin.addEventListener('click', async () => {
         btnGuestLogin.innerText = "Entering...";
@@ -200,6 +198,43 @@ if (tenantForm) {
 async function loadTenants() {
     if(!tenantTableBody) return;
     tenantTableBody.innerHTML = "<tr><td colspan='5'>Loading Data...</td></tr>";
+
+    if (isGuestMode) {
+        if(document.getElementById('total-tenants')) document.getElementById('total-tenants').innerText = "2";
+        if(document.getElementById('total-rent')) document.getElementById('total-rent').innerText = "18000";
+        tenantTableBody.innerHTML = `
+            <tr>
+                <td>
+                    <strong>Demo Tenant 1</strong> 
+                    <span class="status-badge status-active">Active</span> <br>
+                    <small style="color: gray;">Meter: 1020304050</small>
+                </td>
+                <td>01700000000</td>
+                <td>N/A</td>
+                <td>৳ 9000</td>
+                <td>
+                    <button class="btn-view" disabled style="opacity:0.5; cursor:not-allowed;">History</button>
+                    <button class="btn-edit" disabled style="opacity:0.5; cursor:not-allowed;">Edit</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Demo Tenant 2</strong> 
+                    <span class="status-badge status-active">Active</span> <br>
+                    <small style="color: gray;">Meter: 5040302010</small>
+                </td>
+                <td>01900000000</td>
+                <td>N/A</td>
+                <td>৳ 9000</td>
+                <td>
+                    <button class="btn-view" disabled style="opacity:0.5; cursor:not-allowed;">History</button>
+                    <button class="btn-edit" disabled style="opacity:0.5; cursor:not-allowed;">Edit</button>
+                </td>
+            </tr>
+        `;
+        return; 
+    }
+
     try {
         const querySnapshot = await getDocs(collection(db, "tenants"));
         tenantTableBody.innerHTML = ""; 
@@ -311,14 +346,12 @@ if(editTenantForm) {
     });
 }
 
-// === LOAD COMBINED RENT & ADVANCE HISTORY ===
 async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
     if(!historyModal) return;
     historyModal.classList.remove('hidden');
     modalTenantName.innerText = tenantName;
     historyTableBody.innerHTML = "<tr><td colspan='6'>History Loading...</td></tr>";
     
-    // Globally saving tenant info for reload after due payment
     window.currentHistoryTenant = { id: tenantId, name: tenantName, meter: tenantMeter };
 
     try {
@@ -358,7 +391,6 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
             const dueAmt = record.dueAmount !== undefined ? record.dueAmount : 0;
             const gasBillAmt = isAdvance ? 0 : (record.gasBill !== undefined ? record.gasBill : 1080);
             
-            // Due Payment Button UI
             let actionButtons = `<button class="btn-print" onclick="printInvoice('${invoiceNo}', '${isAdvance ? 'ADVANCE' : record.rentMonth}', ${paidAmt}, ${gasBillAmt}, ${dueAmt}, '${tenantName}', '${tenantMeter}', '${record.recordType}', '${record.paymentDate}')">Print</button>`;
             
             if (dueAmt > 0) {
@@ -379,8 +411,8 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
     } catch (error) {}
 }
 
-// DUE PAYMENT LOGIC
 window.openDueModal = function(recordId, recordType, currentDue, currentPaid) {
+    if(checkGuest()) return;
     document.getElementById('due-record-id').value = recordId;
     document.getElementById('due-record-type').value = recordType;
     document.getElementById('due-current-due').value = currentDue;
@@ -424,7 +456,6 @@ if(dueForm) {
             alert("Due payment updated successfully!");
             dueModal.classList.add('hidden');
             
-            // Reload history seamlessly
             if (window.currentHistoryTenant) {
                 loadTenantHistory(window.currentHistoryTenant.id, window.currentHistoryTenant.name, window.currentHistoryTenant.meter);
             }
@@ -432,7 +463,6 @@ if(dueForm) {
     });
 }
 
-// INVOICE PRINT LOGIC (Updated Date & QR URL)
 window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmount, tenantName, tenantMeter, type, recordDate) {
     const titleElement = document.getElementById('inv-property-title');
     if(titleElement) titleElement.innerText = globalPropertyName;
@@ -441,7 +471,7 @@ window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmou
     const finalTotal = Number(paidAmount) + Number(gasBillAmt);
 
     document.getElementById('inv-no').innerText = invoiceNo;
-    document.getElementById('inv-date').innerText = recordDate; // Real recorded date
+    document.getElementById('inv-date').innerText = recordDate; 
     document.getElementById('inv-time').innerText = realTime;
     document.getElementById('inv-tenant-name').innerText = tenantName;
     document.getElementById('inv-month').innerText = month;
@@ -461,7 +491,8 @@ window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmou
         if(gasRow) gasRow.style.display = 'none'; 
         if(dueRow) {
             dueRow.style.display = ''; 
-            document.getElementById('inv-due').innerText = dueAmount;
+            const advDueStr = (dueAmount !== undefined && dueAmount !== null) ? dueAmount : 0;
+            document.getElementById('inv-due').innerText = advDueStr;
         }
     } else {
         if(receiptType) receiptType.innerText = "RENT PAYMENT RECEIPT";
@@ -476,7 +507,6 @@ window.printInvoice = function(invoiceNo, month, paidAmount, gasBillAmt, dueAmou
         }
     }
 
-    // QR Code URL Generate (Mock URL for future online hosting)
     const qrUrl = `https://tenant-record-three.vercel.app/receipt.html?inv=${invoiceNo}`;
     document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrUrl)}`;
 
@@ -487,6 +517,14 @@ async function populateTenantDropdowns() {
     if(selectTenant) selectTenant.innerHTML = '<option value="">-- Select Tenant --</option>';
     if(selectAdvanceTenant) selectAdvanceTenant.innerHTML = '<option value="">-- Select Tenant --</option>';
     
+    if (isGuestMode) {
+        const opt1 = document.createElement('option');
+        opt1.value = "dummy1"; opt1.textContent = "Demo Tenant 1 (Meter: 1020304050)";
+        if(selectTenant) selectTenant.appendChild(opt1.cloneNode(true));
+        if(selectAdvanceTenant) selectAdvanceTenant.appendChild(opt1);
+        return; 
+    }
+
     try {
         const querySnapshot = await getDocs(collection(db, "tenants"));
         querySnapshot.forEach((doc) => {
