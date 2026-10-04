@@ -32,5 +32,5 @@ To run this project locally for development and testing:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/yourusername/shiraji-villa-tenant-system.git](https://github.com/yourusername/shiraji-villa-tenant-system.git)
-   cd shiraji-villa-tenant-system
+   git clone [https://github.com/yourusername/tenant_record.git](https://github.com/yourusername/tenant_record.git)
+   cd tenant_record
