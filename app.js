@@ -176,6 +176,7 @@ if (settingsForm) {
     });
 }
 
+// Tenant save korar somoy Email jukto kora holo
 if (tenantForm) {
     tenantForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -184,11 +185,21 @@ if (tenantForm) {
         submitBtn.innerText = "Registering...";
         const name = document.getElementById('tenant-name').value;
         const phone = document.getElementById('tenant-phone').value;
+        const email = document.getElementById('tenant-email').value; // Get Email
         const nid = document.getElementById('tenant-nid').value;
         const rent = document.getElementById('tenant-rent').value;
         const meter = document.getElementById('tenant-meter').value;
         try {
-            await addDoc(collection(db, "tenants"), { name: name, phone: phone, nid: nid, rent: Number(rent), meter: meter, status: "active", registrationDate: new Date().toLocaleDateString() });
+            await addDoc(collection(db, "tenants"), { 
+                name: name, 
+                phone: phone, 
+                email: email, // Save Email
+                nid: nid, 
+                rent: Number(rent), 
+                meter: meter, 
+                status: "active", 
+                registrationDate: new Date().toLocaleDateString() 
+            });
             alert("New tenant registered successfully!");
             tenantForm.reset();
         } catch (error) {} finally { submitBtn.innerText = "Register Tenant"; }
@@ -209,7 +220,7 @@ async function loadTenants() {
                     <span class="status-badge status-active">Active</span> <br>
                     <small style="color: gray;">Meter: 1020304050</small>
                 </td>
-                <td>01700000000</td>
+                <td>01700000000<br><small style="color: gray;">demo1@example.com</small></td>
                 <td>N/A</td>
                 <td>৳ 9000</td>
                 <td>
@@ -223,7 +234,7 @@ async function loadTenants() {
                     <span class="status-badge status-active">Active</span> <br>
                     <small style="color: gray;">Meter: 5040302010</small>
                 </td>
-                <td>01900000000</td>
+                <td>01900000000<br><small style="color: gray;">demo2@example.com</small></td>
                 <td>N/A</td>
                 <td>৳ 9000</td>
                 <td>
@@ -248,6 +259,7 @@ async function loadTenants() {
             
             const safeNid = tenant.nid || '';
             const safeMeter = tenant.meter || 'N/A';
+            const safeEmail = tenant.email || ''; // Read Email
             
             const tr = document.createElement('tr');
             tr.className = isActive ? '' : 'inactive-row';
@@ -257,12 +269,12 @@ async function loadTenants() {
                     <span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? 'Active' : 'Inactive'}</span> <br>
                     <small style="color: gray;">Meter: ${safeMeter}</small>
                 </td>
-                <td>${tenant.phone}</td>
+                <td>${tenant.phone} <br><small style="color: gray;">${safeEmail}</small></td>
                 <td>${safeNid || 'N/A'}</td>
                 <td>৳ ${tenant.rent}</td>
                 <td>
                     <button class="btn-view" data-id="${tenantId}" data-name="${tenant.name}" data-meter="${safeMeter}">History</button>
-                    <button class="btn-edit" data-id="${tenantId}" data-name="${tenant.name}" data-phone="${tenant.phone}" data-nid="${safeNid}" data-rent="${tenant.rent}" data-meter="${safeMeter}">Edit</button>
+                    <button class="btn-edit" data-id="${tenantId}" data-name="${tenant.name}" data-phone="${tenant.phone}" data-email="${safeEmail}" data-nid="${safeNid}" data-rent="${tenant.rent}" data-meter="${safeMeter}">Edit</button>
                     <button class="btn-toggle-status" data-id="${tenantId}" data-status="${status}">${isActive ? 'Deactivate' : 'Activate'}</button>
                 </td>
             `;
@@ -288,6 +300,7 @@ async function loadTenants() {
                     button.getAttribute('data-id'), 
                     button.getAttribute('data-name'), 
                     button.getAttribute('data-phone'), 
+                    button.getAttribute('data-email'), // Pass Email
                     button.getAttribute('data-nid'), 
                     button.getAttribute('data-rent'), 
                     button.getAttribute('data-meter')
@@ -312,11 +325,12 @@ if (searchTenant) {
     });
 }
 
-function openEditModal(id, name, phone, nid, rent, meter) {
+function openEditModal(id, name, phone, email, nid, rent, meter) {
     if(!editModal) return;
     document.getElementById('edit-tenant-id').value = id;
     document.getElementById('edit-tenant-name').value = name;
     document.getElementById('edit-tenant-phone').value = phone;
+    document.getElementById('edit-tenant-email').value = email; // Populate Email
     document.getElementById('edit-tenant-nid').value = nid;
     document.getElementById('edit-tenant-rent').value = rent;
     document.getElementById('edit-tenant-meter').value = meter !== 'N/A' ? meter : '';
@@ -333,6 +347,7 @@ if(editTenantForm) {
         const updatedData = {
             name: document.getElementById('edit-tenant-name').value,
             phone: document.getElementById('edit-tenant-phone').value,
+            email: document.getElementById('edit-tenant-email').value, // Update Email
             nid: document.getElementById('edit-tenant-nid').value,
             rent: Number(document.getElementById('edit-tenant-rent').value),
             meter: document.getElementById('edit-tenant-meter').value
