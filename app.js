@@ -70,7 +70,8 @@ onAuthStateChanged(auth, (user) => {
         isGuestMode = user.isAnonymous; 
         loginScreen.classList.add('hidden-login');
         mainContent.style.display = 'block';
-        sidebar.style.display = 'block';
+        sidebar.style.display = '';
+        if (window.UI) window.UI.setMode(isGuestMode);
         if(isGuestMode) alert("Logged in as GUEST. Displaying dummy data. Saving or updating is disabled.");
         loadSettings(); 
         loadTenants(); 
@@ -85,6 +86,7 @@ if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitBtn = loginForm.querySelector('button[type="submit"]');
+        loginError.style.display = 'none';
         submitBtn.innerText = "Logging in...";
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
@@ -157,6 +159,7 @@ async function loadSettings() {
             if(document.getElementById('setting-property-name')) {
                 document.getElementById('setting-property-name').value = globalPropertyName;
             }
+            if (window.UI) window.UI.setProperty(globalPropertyName);
         }
     } catch (error) {}
 }
@@ -171,6 +174,7 @@ if (settingsForm) {
         try {
             await setDoc(doc(db, "settings", "config"), { propertyName: newName }, { merge: true });
             globalPropertyName = newName;
+            if (window.UI) window.UI.setProperty(newName);
             alert("Settings saved successfully!");
         } catch (error) {} finally { submitBtn.innerText = "Save Settings"; }
     });
@@ -400,7 +404,7 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
         allRecords.forEach((record) => {
             const invoiceNo = record.invoiceId || 'N/A'; 
             const isAdvance = record.recordType === 'advance';
-            const monthBadge = isAdvance ? '<span style="background:#fef08a; padding:2px 6px; border-radius:4px; font-size:12px; font-weight:bold; color:#854d0e;">ADVANCE</span>' : record.rentMonth;
+            const monthBadge = isAdvance ? '<span class="adv-badge">ADVANCE</span>' : record.rentMonth;
             
             const paidAmt = isAdvance ? record.advanceAmount : record.paidAmount;
             const dueAmt = record.dueAmount !== undefined ? record.dueAmount : 0;
@@ -414,10 +418,10 @@ async function loadTenantHistory(tenantId, tenantName, tenantMeter) {
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="font-family: monospace; font-weight: bold;">${invoiceNo}</td>
+                <td class="mono">${invoiceNo}</td>
                 <td>${monthBadge}</td>
-                <td style="color: green; font-weight: bold;">৳ ${paidAmt}</td>
-                <td style="color: ${dueAmt > 0 ? 'red' : 'gray'};">৳ ${dueAmt}</td>
+                <td class="amt-paid">৳ ${paidAmt}</td>
+                <td class="${dueAmt > 0 ? 'amt-due' : 'amt-zero'}">৳ ${dueAmt}</td>
                 <td>${record.paymentDate}</td>
                 <td>${actionButtons}</td>
             `;
