@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0b1020">
+    <meta name="theme-color" content="#111214">
     <title>Tenant Management System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -31,30 +31,20 @@
         <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
     </svg>
 
-    <!-- ================= Animated background ================= -->
-    <div class="bg-scene" aria-hidden="true">
-        <span class="blob blob-1"></span>
-        <span class="blob blob-2"></span>
-        <span class="blob blob-3"></span>
-        <span class="blob blob-4"></span>
-        <div class="bg-grid"></div>
-        <div class="bg-noise"></div>
-    </div>
-
     <!-- ================= Login ================= -->
     <div id="login-screen" class="login-overlay">
         <div class="login-box glass">
             <div class="login-brand">
                 <div class="brand-mark"><svg class="ico"><use href="#i-building"/></svg></div>
-                <h1>Welcome back</h1>
-                <p>Sign in to manage tenants, rent and receipts.</p>
+                <h1>Sign in</h1>
+                <p>Tenants, rent and receipts for your building</p>
             </div>
             <form id="login-form">
                 <div class="form-group">
                     <label for="login-email">Email address</label>
                     <div class="input-icon">
                         <svg class="ico"><use href="#i-mail"/></svg>
-                        <input type="email" id="login-email" placeholder="admin@example.com" autocomplete="username" required>
+                        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="username" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -64,13 +54,12 @@
                         <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required>
                     </div>
                 </div>
-                <p id="login-error" class="form-error" style="display: none;">Invalid email or password. Please try again.</p>
-                <button type="submit" class="btn btn-primary">Login to Dashboard</button>
+                <p id="login-error" class="form-error" style="display: none;">Email or password is incorrect</p>
+                <button type="submit" class="btn btn-primary">Sign in</button>
                 <div class="divider-text"><span>or</span></div>
-                <button type="button" id="btn-guest-login" class="btn btn-ghost">Explore as Guest</button>
+                <button type="button" id="btn-guest-login" class="btn btn-ghost">Continue as guest</button>
             </form>
         </div>
-        <p class="login-foot">Secure access · Firebase Authentication</p>
     </div>
 
     <!-- ================= Sidebar ================= -->
@@ -90,14 +79,14 @@
 
         <p class="nav-label">Tenants</p>
         <ul class="nav">
-            <li><a href="#" id="link-add-tenant" class="nav-link" data-title="Add Tenant"><svg class="ico"><use href="#i-user-plus"/></svg><span>Add Tenant</span></a></li>
-            <li><a href="#" id="link-tenant-list" class="nav-link" data-title="Tenant List"><svg class="ico"><use href="#i-users"/></svg><span>Tenant List</span></a></li>
+            <li><a href="#" id="link-add-tenant" class="nav-link" data-title="Add tenant"><svg class="ico"><use href="#i-user-plus"/></svg><span>Add tenant</span></a></li>
+            <li><a href="#" id="link-tenant-list" class="nav-link" data-title="Tenant list"><svg class="ico"><use href="#i-users"/></svg><span>Tenant list</span></a></li>
         </ul>
 
         <p class="nav-label">Payments</p>
         <ul class="nav">
-            <li><a href="#" id="link-collect-rent" class="nav-link" data-title="Collect Rent"><svg class="ico"><use href="#i-cash"/></svg><span>Collect Rent</span></a></li>
-            <li><a href="#" id="link-collect-advance" class="nav-link" data-title="Collect Advance"><svg class="ico"><use href="#i-coins"/></svg><span>Collect Advance</span></a></li>
+            <li><a href="#" id="link-collect-rent" class="nav-link" data-title="Collect rent"><svg class="ico"><use href="#i-cash"/></svg><span>Collect rent</span></a></li>
+            <li><a href="#" id="link-collect-advance" class="nav-link" data-title="Collect advance"><svg class="ico"><use href="#i-coins"/></svg><span>Collect advance</span></a></li>
         </ul>
 
         <p class="nav-label">System</p>
@@ -134,33 +123,31 @@
 
         <!-- Dashboard -->
         <section id="sec-dashboard" class="active">
-            <div class="hero glass">
+            <div class="hero">
                 <div>
-                    <p class="eyebrow" id="greeting">Good day</p>
-                    <h2>Here's how your property is doing</h2>
-                    <p class="muted">Live overview of active tenants and expected monthly income.</p>
-                </div>
-                <div class="hero-art" aria-hidden="true">
-                    <span></span><span></span><span></span>
+                    <p class="eyebrow" id="greeting">Overview</p>
+                    <h2>Rent roll</h2>
                 </div>
             </div>
 
             <div class="dashboard-cards">
-                <div class="card stat glass" style="--accent: var(--c-violet);">
-                    <div class="stat-icon"><svg class="ico"><use href="#i-users"/></svg></div>
-                    <h3>Active Tenants</h3>
+                <div class="card stat glass">
+                    <h3>Active tenants</h3>
                     <p id="total-tenants">0</p>
                     <span class="stat-foot">Currently occupying units</span>
                 </div>
-                <div class="card stat glass" style="--accent: var(--c-teal);">
-                    <div class="stat-icon"><svg class="ico"><use href="#i-trend"/></svg></div>
-                    <h3>Expected Monthly Rent</h3>
-                    <p><span class="cur">৳</span><span id="total-rent">0</span></p>
-                    <span class="stat-foot">From all active tenants</span>
+                <div class="card stat glass ledger">
+                    <div class="ledger-head">
+                        <h3>Expected monthly rent</h3>
+                        <span class="ledger-tag">All active tenants</span>
+                    </div>
+                    <div class="ledger-figure">
+                        <p><span class="cur">৳</span><span id="total-rent">0</span></p>
+                        <span class="stat-foot">Sum of monthly rent, gas bill not included</span>
+                    </div>
                 </div>
-                <div class="card stat glass" style="--accent: var(--c-pink);">
-                    <div class="stat-icon"><svg class="ico"><use href="#i-cash"/></svg></div>
-                    <h3>Average Rent</h3>
+                <div class="card stat glass">
+                    <h3>Average rent</h3>
                     <p><span class="cur">৳</span><span id="avg-rent">0</span></p>
                     <span class="stat-foot">Per active tenant</span>
                 </div>
@@ -171,16 +158,16 @@
                 <button type="button" class="qa glass" data-go="link-add-tenant"><span class="qa-icon"><svg class="ico"><use href="#i-user-plus"/></svg></span><span><strong>Add tenant</strong><small>Register a new tenant</small></span><svg class="ico qa-arrow"><use href="#i-arrow"/></svg></button>
                 <button type="button" class="qa glass" data-go="link-collect-rent"><span class="qa-icon"><svg class="ico"><use href="#i-cash"/></svg></span><span><strong>Collect rent</strong><small>Record a monthly payment</small></span><svg class="ico qa-arrow"><use href="#i-arrow"/></svg></button>
                 <button type="button" class="qa glass" data-go="link-collect-advance"><span class="qa-icon"><svg class="ico"><use href="#i-coins"/></svg></span><span><strong>Collect advance</strong><small>Record an advance deposit</small></span><svg class="ico qa-arrow"><use href="#i-arrow"/></svg></button>
-                <button type="button" class="qa glass" data-go="link-tenant-list"><span class="qa-icon"><svg class="ico"><use href="#i-users"/></svg></span><span><strong>View tenants</strong><small>History, edits &amp; receipts</small></span><svg class="ico qa-arrow"><use href="#i-arrow"/></svg></button>
+                <button type="button" class="qa glass" data-go="link-tenant-list"><span class="qa-icon"><svg class="ico"><use href="#i-users"/></svg></span><span><strong>View tenants</strong><small>History, edits and receipts</small></span><svg class="ico qa-arrow"><use href="#i-arrow"/></svg></button>
             </div>
         </section>
 
-        <!-- Add Tenant -->
+        <!-- Add tenant -->
         <section id="sec-add-tenant" class="hidden">
             <div class="panel glass">
                 <div class="section-head">
                     <h2>Add New Tenant</h2>
-                    <p class="muted">Fill in the tenant's details. Fields marked * are required.</p>
+                    <p class="muted">Fields marked * are required</p>
                 </div>
                 <form id="tenant-form" class="form-grid">
                     <div class="form-group"><label for="tenant-name">Tenant name *</label><input type="text" id="tenant-name" placeholder="Full name" required></div>
@@ -189,39 +176,39 @@
                     <div class="form-group"><label for="tenant-nid">NID number</label><input type="text" id="tenant-nid" placeholder="National ID"></div>
                     <div class="form-group"><label for="tenant-rent">Monthly rent (৳) *</label><input type="number" id="tenant-rent" placeholder="0" required></div>
                     <div class="form-group"><label for="tenant-meter">Meter number</label><input type="text" id="tenant-meter" placeholder="Prepaid meter no."></div>
-                    <div class="form-actions"><button type="submit" class="btn btn-primary">Register Tenant</button></div>
+                    <div class="form-actions"><button type="submit" class="btn btn-primary">Register tenant</button></div>
                 </form>
             </div>
         </section>
 
-        <!-- Tenant List -->
+        <!-- Tenant list -->
         <section id="sec-tenant-list" class="hidden">
             <div class="panel glass">
                 <div class="section-head row">
                     <div>
-                        <h2>Tenant List</h2>
-                        <p class="muted">Search, view history, edit or change a tenant's status.</p>
+                        <h2>Tenant list</h2>
+                        <p class="muted">History, edits, receipts and status</p>
                     </div>
                     <div class="search-container">
                         <svg class="ico"><use href="#i-search"/></svg>
-                        <input type="text" id="search-tenant" placeholder="Search by name, phone or NID…">
+                        <input type="text" id="search-tenant" placeholder="Name, phone or NID">
                     </div>
                 </div>
                 <div class="table-wrap">
                     <table class="tenant-table">
-                        <thead><tr><th>Name &amp; Meter</th><th>Contact Info</th><th>NID</th><th>Rent (৳)</th><th>Action</th></tr></thead>
+                        <thead><tr><th>Name and meter</th><th>Contact</th><th>NID</th><th>Rent (৳)</th><th>Action</th></tr></thead>
                         <tbody id="tenant-table-body"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- Collect Rent -->
+        <!-- Collect rent -->
         <section id="sec-collect-rent" class="hidden">
             <div class="panel glass">
                 <div class="section-head">
-                    <h2>Collect Rent</h2>
-                    <p class="muted">Record a monthly rent payment. An invoice number is generated automatically.</p>
+                    <h2>Collect rent</h2>
+                    <p class="muted">Each payment gets its own invoice number</p>
                 </div>
                 <form id="rent-form" class="form-grid">
                     <div class="form-group span-2">
@@ -236,20 +223,20 @@
                         <label class="switch-row" for="include-gas-bill">
                             <input type="checkbox" id="include-gas-bill" checked>
                             <span class="switch"></span>
-                            <span class="switch-text"><svg class="ico"><use href="#i-flame"/></svg> Include gas bill <strong>৳ 1080</strong></span>
+                            <span class="switch-text"><svg class="ico"><use href="#i-flame"/></svg> Include gas bill <strong>৳1,080</strong></span>
                         </label>
                     </div>
-                    <div class="form-actions"><button type="submit" class="btn btn-primary">Save Rent Record</button></div>
+                    <div class="form-actions"><button type="submit" class="btn btn-primary">Save rent record</button></div>
                 </form>
             </div>
         </section>
 
-        <!-- Collect Advance -->
+        <!-- Collect advance -->
         <section id="sec-collect-advance" class="hidden">
             <div class="panel glass">
                 <div class="section-head">
-                    <h2>Collect Advance</h2>
-                    <p class="muted">Record an advance / security deposit from a tenant.</p>
+                    <h2>Collect advance</h2>
+                    <p class="muted">Advance or security deposit</p>
                 </div>
                 <form id="advance-form" class="form-grid">
                     <div class="form-group span-2">
@@ -258,7 +245,7 @@
                     </div>
                     <div class="form-group"><label for="advance-amount">Paid advance amount (৳) *</label><input type="number" id="advance-amount" placeholder="0" required></div>
                     <div class="form-group"><label for="advance-due">Advance due (৳)</label><input type="number" id="advance-due" value="0" required></div>
-                    <div class="form-actions"><button type="submit" class="btn btn-primary">Save Advance Record</button></div>
+                    <div class="form-actions"><button type="submit" class="btn btn-primary">Save advance record</button></div>
                 </form>
             </div>
         </section>
@@ -267,12 +254,12 @@
         <section id="sec-settings" class="hidden">
             <div class="panel glass narrow">
                 <div class="section-head">
-                    <h2>System Settings</h2>
-                    <p class="muted">This name is printed at the top of every invoice.</p>
+                    <h2>Settings</h2>
+                    <p class="muted">The property name prints at the top of every invoice</p>
                 </div>
                 <form id="settings-form">
                     <div class="form-group"><label for="setting-property-name">Property / house name</label><input type="text" id="setting-property-name" placeholder="E.g., Shiraji Villa" required></div>
-                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                    <button type="submit" class="btn btn-primary">Save settings</button>
                 </form>
             </div>
         </section>
@@ -282,10 +269,10 @@
     <div id="history-modal" class="modal hidden">
         <div class="modal-content glass wide">
             <span class="close-btn" id="close-modal" role="button" aria-label="Close">&times;</span>
-            <h2>Payment History: <span id="modal-tenant-name"></span></h2>
+            <h2>Payment history <span id="modal-tenant-name"></span></h2>
             <div class="table-wrap">
                 <table class="tenant-table">
-                    <thead><tr><th>Invoice No</th><th>Month</th><th>Paid</th><th>Due</th><th>Date</th><th>Action</th></tr></thead>
+                    <thead><tr><th>Invoice</th><th>Month</th><th>Paid</th><th>Due</th><th>Date</th><th>Action</th></tr></thead>
                     <tbody id="history-table-body"></tbody>
                 </table>
             </div>
@@ -295,7 +282,7 @@
     <div id="due-modal" class="modal hidden">
         <div class="modal-content glass" style="max-width: 420px;">
             <span class="close-btn" id="close-due-modal" role="button" aria-label="Close">&times;</span>
-            <h2>Pay Due Amount</h2>
+            <h2>Pay due amount</h2>
             <form id="due-form">
                 <input type="hidden" id="due-record-id">
                 <input type="hidden" id="due-record-type">
@@ -309,7 +296,7 @@
                     <label for="pay-due-amount">Paying amount (৳)</label>
                     <input type="number" id="pay-due-amount" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Update Payment</button>
+                <button type="submit" class="btn btn-primary">Record payment</button>
             </form>
         </div>
     </div>
@@ -317,7 +304,7 @@
     <div id="edit-modal" class="modal hidden">
         <div class="modal-content glass">
             <span class="close-btn" id="close-edit-modal" role="button" aria-label="Close">&times;</span>
-            <h2>Edit Tenant Info</h2>
+            <h2>Edit tenant</h2>
             <form id="edit-tenant-form" class="form-grid">
                 <input type="hidden" id="edit-tenant-id">
                 <div class="form-group"><label for="edit-tenant-name">Tenant name *</label><input type="text" id="edit-tenant-name" required></div>
@@ -326,7 +313,7 @@
                 <div class="form-group"><label for="edit-tenant-nid">NID number</label><input type="text" id="edit-tenant-nid"></div>
                 <div class="form-group"><label for="edit-tenant-rent">Monthly rent (৳) *</label><input type="number" id="edit-tenant-rent" required></div>
                 <div class="form-group"><label for="edit-tenant-meter">Meter number</label><input type="text" id="edit-tenant-meter"></div>
-                <div class="form-actions"><button type="submit" class="btn btn-primary">Update Tenant Info</button></div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary">Save changes</button></div>
             </form>
         </div>
     </div>
