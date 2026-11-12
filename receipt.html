@@ -3,115 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#070b1a">
-    <title>Invoice Verification - Shiraji Villa</title>
+    <meta name="theme-color" content="#111214">
+    <title>Invoice verification · Shiraji Villa</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --grad: linear-gradient(135deg, #8b5cf6 0%, #6366f1 45%, #22d3ee 100%);
-            --text: #eef1fb; --text-2: #c3c9e0; --muted: #8d96b5;
-            --border: rgba(255,255,255,.12);
-            --ease: cubic-bezier(.22, 1, .36, 1);
+            --bg: #111214;
+            --paper: #f5f2ea;
+            --paper-line: rgba(40, 36, 28, .12);
+            --ink: #1c1b18;
+            --ink-2: #5b574e;
+            --ink-muted: #8c877b;
+            --paid: #2f7d55;
+            --due: #b0473f;
+            --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+            --ease: cubic-bezier(.2, .7, .2, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            font-family: var(--font);
             min-height: 100vh;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 32px 18px;
-            color: var(--text);
-            background: radial-gradient(900px 600px at 0% 0%, #1b1650, transparent 60%),
-                        radial-gradient(900px 600px at 100% 100%, #062a3a, transparent 60%),
-                        linear-gradient(160deg, #070b1a, #0d1330);
-            overflow-x: hidden;
+            gap: 32px;
+            padding: 40px 16px;
+            background: var(--bg);
+            color: #ececee;
             -webkit-font-smoothing: antialiased;
         }
-        .blob { position: fixed; border-radius: 50%; filter: blur(80px); opacity: .5; z-index: -1; }
-        .b1 { width: 420px; height: 420px; background: #8b5cf6; top: -120px; left: -100px; animation: f1 22s ease-in-out infinite alternate; }
-        .b2 { width: 380px; height: 380px; background: #22d3ee; bottom: -120px; right: -100px; animation: f2 26s ease-in-out infinite alternate; }
-        @keyframes f1 { to { transform: translate(30vw, 30vh) scale(1.2); } }
-        @keyframes f2 { to { transform: translate(-30vw, -30vh) scale(.9); } }
 
-        .glass {
-            position: relative;
-            background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
-            border: 1px solid var(--border);
-            backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%);
-            box-shadow: 0 30px 70px -24px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.1);
-        }
-
-        .loader { display: flex; flex-direction: column; align-items: center; gap: 18px; color: var(--text-2); font-size: 16px; font-weight: 600; text-align: center; }
-        .loader::before { content: ""; width: 46px; height: 46px; border-radius: 50%; border: 3px solid rgba(255,255,255,.12); border-top-color: #8b5cf6; border-right-color: #22d3ee; animation: spin .9s linear infinite; }
+        .loader { display: flex; align-items: center; gap: 12px; color: #a5a7ad; font-size: 14px; }
+        .loader::before { content: ""; width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(237,238,240,.14); border-top-color: #ececee; animation: spin .8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .receipt-card { width: 100%; max-width: 420px; padding: 34px 28px 28px; border-radius: 28px; text-align: center; display: none; animation: pop .7s var(--ease) both; }
-        @keyframes pop { from { opacity: 0; transform: translateY(20px) scale(.96); } to { opacity: 1; transform: none; } }
+        /* The paper slip */
+        .receipt-card {
+            position: relative;
+            width: 100%; max-width: 380px;
+            padding: 32px 28px 40px;
+            background: var(--paper);
+            color: var(--ink);
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 24px 48px -20px rgba(0,0,0,.7), 0 2px 4px rgba(0,0,0,.3);
+            display: none;
+            animation: rise .3s var(--ease) both;
+        }
+        /* torn bottom edge */
+        .receipt-card::after {
+            content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px;
+            background: conic-gradient(from -45deg at 50% 100%, var(--paper) 90deg, transparent 0) 0 0 / 16px 8px repeat-x;
+        }
+        @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-        .verified { width: 72px; height: 72px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #34d399, #22d3ee); box-shadow: 0 0 0 8px rgba(52,211,153,.12), 0 16px 34px -10px rgba(52,211,153,.8); animation: ring 2.6s ease-in-out infinite; }
-        .verified svg { width: 34px; height: 34px; stroke: #fff; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; animation: draw .7s .4s var(--ease) forwards; }
-        @keyframes draw { to { stroke-dashoffset: 0; } }
-        @keyframes ring { 0%,100% { box-shadow: 0 0 0 8px rgba(52,211,153,.12), 0 16px 34px -10px rgba(52,211,153,.8); } 50% { box-shadow: 0 0 0 14px rgba(52,211,153,.05), 0 16px 34px -10px rgba(52,211,153,.8); } }
+        .slip-head { text-align: center; padding-bottom: 20px; border-bottom: 1px dashed var(--paper-line); }
+        .slip-head h2 { font-size: 18px; font-weight: 600; line-height: 1.3; }
+        .slip-head .kind { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
 
-        .receipt-card h2 { font-size: 22px; font-weight: 800; letter-spacing: 1px; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 8px; }
-        .badge { display: inline-block; padding: 6px 14px; margin-bottom: 24px; border-radius: 999px; font-size: 11.5px; font-weight: 800; letter-spacing: .8px; color: #6ee7b7; background: rgba(52,211,153,.14); border: 1px solid rgba(52,211,153,.35); }
+        .stamp {
+            display: inline-flex; align-items: center; gap: 8px;
+            margin-top: 16px;
+            padding: 4px 12px 4px 8px;
+            border: 1.5px solid var(--paid);
+            border-radius: 6px;
+            color: var(--paid);
+            font-size: 13px; font-weight: 600;
+            transform: rotate(-2deg);
+        }
+        .stamp svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
-        .details { text-align: left; font-size: 14px; color: var(--text-2); border-radius: 16px; padding: 6px 16px; background: rgba(8,12,30,.35); border: 1px solid rgba(255,255,255,.07); }
-        .details p { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px dashed rgba(255,255,255,.1); }
-        .details p:last-child { border-bottom: none; }
-        .details strong { color: var(--text); font-weight: 700; text-align: right; }
-        #r-due { color: #fda4af !important; }
+        .details { padding: 8px 0; border-bottom: 1px dashed var(--paper-line); }
+        .details p { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 8px 0; font-size: 13px; color: var(--ink-2); }
+        .details strong { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+        #r-due { color: var(--due) !important; }
 
-        .total { margin-top: 18px; padding: 18px; border-radius: 16px; font-size: 15px; font-weight: 600; color: var(--text-2); background: linear-gradient(135deg, rgba(139,92,246,.25), rgba(34,211,238,.12)); border: 1px solid rgba(139,92,246,.35); }
-        .total span { display: block; font-size: 30px; font-weight: 800; color: #fff; letter-spacing: -.5px; margin-top: 2px; }
+        .total { display: flex; justify-content: space-between; align-items: baseline; padding: 20px 0 0; font-size: 14px; color: var(--ink-2); }
+        .total > span { font-family: var(--mono); font-size: 28px; font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; padding-bottom: 4px; border-bottom: 3px double var(--ink); }
 
-        .meter-card { margin-top: 18px; padding: 16px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
-        .meter-card h3 { font-size: 14px; font-weight: 700; color: var(--text-2); margin-bottom: 12px; }
-        .meter-card img { width: 100%; border-radius: 10px; display: block; background: #fff; }
+        .meter-card { margin-top: 24px; padding-top: 16px; border-top: 1px dashed var(--paper-line); }
+        .meter-card h3 { font-size: 12px; font-weight: 500; color: var(--ink-muted); margin-bottom: 12px; }
+        .meter-card img { width: 100%; border-radius: 4px; display: block; background: #fff; }
 
-        .btn-download { position: relative; overflow: hidden; width: 100%; margin-top: 22px; padding: 14px 20px; border: none; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer; background: var(--grad); box-shadow: 0 12px 28px -10px rgba(124,108,246,.85); transition: transform .25s var(--ease), box-shadow .25s; }
-        .btn-download:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -10px rgba(124,108,246,.95); }
-        .foot { margin-top: 20px; font-size: 12px; color: var(--muted); }
+        .btn-download {
+            height: 40px; padding: 0 20px;
+            border: 1px solid rgba(237,238,240,.14); border-radius: 8px;
+            background: transparent; color: #ececee;
+            font: inherit; font-size: 14px; font-weight: 500;
+            cursor: pointer;
+            transition: background-color .12s var(--ease);
+        }
+        .btn-download:hover { background: #1d1f22; }
+        .btn-download:active { transform: scale(.98); }
+        .btn-download:focus-visible { outline: 2px solid #5fb98a; outline-offset: 2px; }
+        .foot { font-size: 12px; color: #6f7279; }
 
-        @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } .verified svg { stroke-dashoffset: 0; } }
+        /* receipt.js shows #receipt-content; the print button follows it */
+        #receipt-content[style*="none"] ~ .actions, #receipt-content:not([style]) ~ .actions { display: none; }
+
+        @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
 
         @media print {
-            body { background: #fff !important; color: #000; padding: 0; }
-            .blob, .btn-download, .foot { display: none !important; }
-            .glass, .details, .total, .meter-card { background: #fff !important; box-shadow: none !important; backdrop-filter: none !important; border-color: #ddd !important; }
-            .receipt-card h2, .total span, .details strong { color: #000 !important; -webkit-text-fill-color: #000; }
-            .details, .total { color: #333; }
-            .verified { box-shadow: none; animation: none; }
-            .verified svg { stroke-dashoffset: 0; animation: none; }
+            body { background: #fff !important; padding: 0; }
+            .actions, .foot { display: none !important; }
+            .receipt-card { box-shadow: none; background: #fff; }
+            .receipt-card::after { display: none; }
         }
     </style>
 </head>
 <body>
-    <span class="blob b1"></span><span class="blob b2"></span>
+    <div id="loading" class="loader">Checking invoice</div>
 
-    <div id="loading" class="loader">Verifying Invoice... Please wait.</div>
-
-    <div id="receipt-content" class="receipt-card glass">
-        <div class="verified"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <h2>SHIRAJI VILLA</h2>
-        <div class="badge">✓ VERIFIED PAYMENT</div>
+    <div id="receipt-content" class="receipt-card">
+        <div class="slip-head">
+            <h2>Shiraji Villa</h2>
+            <p class="kind">Rent receipt</p>
+            <div class="stamp"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Payment verified</div>
+        </div>
         <div class="details">
-            <p>Invoice No <strong id="r-inv"></strong></p>
+            <p>Invoice <strong id="r-inv"></strong></p>
             <p>Date <strong id="r-date"></strong></p>
-            <p>Tenant Name <strong id="r-tenant"></strong></p>
-            <p>Rent Month <strong id="r-month"></strong></p>
-            <p id="r-gas-line">Gas Bill <strong id="r-gas"></strong></p>
-            <p>Due Amount <strong id="r-due"></strong></p>
+            <p>Tenant <strong id="r-tenant" style="font-family: var(--font); font-weight: 600;"></strong></p>
+            <p>Rent month <strong id="r-month"></strong></p>
+            <p id="r-gas-line">Gas bill <strong id="r-gas"></strong></p>
+            <p>Due <strong id="r-due"></strong></p>
         </div>
-        <div class="total">Total Paid<span>৳ <span id="r-total" style="display:inline; font-size:inherit; margin:0;"></span></span></div>
+        <div class="total">Total paid<span>৳<span id="r-total"></span></span></div>
         <div id="meter-info-card" class="meter-card" style="display: none;">
-            <h3>Prepaid Meter Codes</h3>
-            <img src="meter-codes.png" alt="Meter Codes">
+            <h3>Prepaid meter codes</h3>
+            <img src="meter-codes.png" alt="Prepaid meter codes">
         </div>
-        <button class="btn-download" onclick="window.print()">Print / Save PDF</button>
     </div>
-    <p class="foot">Digitally verified receipt · Shiraji Villa</p>
+
+    <div class="actions"><button class="btn-download" onclick="window.print()">Print or save as PDF</button></div>
+    <p class="foot">Verified from the Shiraji Villa ledger</p>
 
     <script type="module" src="receipt.js"></script>
 </body>
